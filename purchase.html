@@ -71,7 +71,8 @@
         
         header { display: flex; align-items: center; justify-content: space-between; background-color: var(--bg-surface); padding: 12px 20px; border-bottom: 1px solid var(--border-color); z-index: 10; flex-shrink: 0; }
         .header-left { display: flex; align-items: center; gap: 12px; }
-        .header-right { display: flex; align-items: center; gap: 12px; }
+        /* NEW: Header Right for Master List Icon */
+        .header-right { display: flex; align-items: center; }
         .company-logo { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; box-shadow: var(--shadow-sm); }
         h1 { font-size: 1.2rem; font-weight: 800; letter-spacing: 0.5px; color: var(--primary-color); margin:0; }
         
@@ -119,14 +120,6 @@
         .pc-status { font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; letter-spacing: 0.5px; }
         .status-received { background: rgba(16, 185, 129, 0.1); color: var(--success-color); border: 1px solid rgba(16, 185, 129, 0.2); }
 
-        /* Raw Master Cards */
-        .raw-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 16px;}
-        .raw-card { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center;}
-        .raw-card-info { display: flex; flex-direction: column; gap: 4px; }
-        .raw-name { font-weight: 700; font-size: 1.05rem; color: var(--text-main); }
-        .raw-uom { font-size: 0.8rem; color: var(--text-muted); background: var(--input-bg); padding: 2px 8px; border-radius: 4px; display: inline-block; width: fit-content; text-transform: uppercase; font-weight: 600;}
-        .raw-stock-badge { background: rgba(59, 130, 246, 0.1); color: var(--primary-color); padding: 8px 12px; border-radius: 8px; font-weight: 800; font-size: 1.1rem; border: 1px solid rgba(59, 130, 246, 0.2); text-align: center; min-width: 60px;}
-
         /* Skeletons */
         .skeleton { background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-shine) 50%, var(--skeleton-base) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
@@ -135,8 +128,7 @@
         .modal { position: fixed; top: 0; right: -100%; width: 100%; height: 100%; background-color: var(--bg-body); z-index: 2000; transition: right 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); overflow-y: auto; padding-bottom: 80px; }
         .modal.active { right: 0; }
         .modal-header { display: flex; align-items: center; gap: 15px; padding: 18px 20px; background: var(--bg-surface); position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--border-color); }
-        .close-modal { background: none; border: none; color: var(--text-main); cursor: pointer; display: flex; padding: 8px; border-radius: 50%; margin-left: -8px; transition: background 0.2s;}
-        .close-modal:active { background: var(--input-bg); }
+        .close-modal { background: none; border: none; color: var(--text-main); cursor: pointer; display: flex; padding: 8px; border-radius: 50%; margin-left: -8px; }
         .modal-header h2 { margin: 0; font-size: 1.25em; font-weight: 700; }
 
         .form-group { padding: 20px; max-width: 800px; margin: 0 auto; }
@@ -151,8 +143,8 @@
         .items-section { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; margin-bottom: 24px; box-shadow: var(--shadow-sm); }
         .items-header { background: var(--input-bg); padding: 12px 16px; font-weight: 600; font-size: 0.9rem; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
         .item-row { display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border-color); align-items: center; }
-        .item-row input, .item-row select { padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main); font-size: 0.9rem; width: 100%; outline: none; font-family: 'Inter', sans-serif; }
-        .item-row input:focus, .item-row select:focus { border-color: var(--primary-color); }
+        .item-row input { padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main); font-size: 0.9rem; width: 100%; outline: none; }
+        .item-row input:focus { border-color: var(--primary-color); }
         .btn-remove-row { color: var(--danger-color); background: rgba(239, 68, 68, 0.1); border: none; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         
         .btn-add-row { width: 100%; padding: 12px; background: transparent; color: var(--primary-color); border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; border-bottom: 1px solid var(--border-color); }
@@ -165,9 +157,6 @@
         .btn-primary { width: 100%; padding: 16px; border-radius: 12px; border: none; background: var(--primary-color); color: white; font-size: 1.1em; font-weight: 700; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; transition: all 0.2s; box-shadow: 0 4px 10px rgba(30, 64, 175, 0.2); }
         .btn-primary:active:not(:disabled) { transform: translateY(2px); box-shadow: none; }
         .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-        
-        .btn-secondary { width: 100%; padding: 16px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); font-size: 1.1em; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; transition: all 0.2s; margin-top: 10px;}
-        .btn-secondary:active { background: var(--input-bg); }
 
         /* History Log Panel */
         .history-panel { background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2); padding: 16px; border-radius: 12px; margin-bottom: 24px; font-size: 0.85rem; color: var(--text-main); }
@@ -180,6 +169,13 @@
         .toast-msg.show { display: flex; opacity: 1; transform: translate(-50%, 0); }
 
         #scrollLoader { text-align: center; padding: 20px; color: var(--text-muted); font-size: 0.9rem; font-weight: 600; display: none; align-items: center; justify-content: center; gap: 10px; }
+
+        /* NEW: Styles for Master Goods Grid */
+        .master-good-card { display:flex; justify-content:space-between; align-items:center; background: var(--bg-surface); padding: 16px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+        .mg-name { font-weight: 700; font-size: 1rem; color: var(--text-main); }
+        .mg-uom { font-size: 0.8rem; color: var(--text-muted); background: var(--input-bg); padding: 2px 8px; border-radius: 4px; margin-top: 4px; display: inline-block;}
+        .mg-stock { font-size: 1.3rem; font-weight: 800; color: var(--primary-color); text-align: right;}
+        .mg-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; text-align: right;}
 
         @media (min-width: 768px) {
             #app-shell { flex-direction: column; }
@@ -211,7 +207,7 @@
                 <h1>PURCHASE</h1>
             </div>
             <div class="header-right">
-                <span class="material-symbols-outlined" style="font-size:28px; color:var(--primary-color); cursor:pointer; padding: 4px; background: var(--input-bg); border-radius: 8px;" onclick="openMasterListModal()" title="Raw Goods Master List">inventory_2</span>
+                <span class="material-symbols-outlined" style="font-size: 26px; color: var(--primary-color); cursor: pointer; padding: 4px; background: rgba(30, 64, 175, 0.1); border-radius: 8px;" onclick="vibrateApp(20); openModal('modalRawGoodsMaster')">inventory_2</span>
             </div>
         </header>
 
@@ -311,54 +307,43 @@
         </div>
     </div>
 
-    <div class="modal" id="modalMasterList">
+    <div class="modal" id="modalRawGoodsMaster">
         <div class="modal-header">
             <button class="close-modal" onclick="history.back()"><span class="material-symbols-outlined">arrow_back</span></button>
-            <h2>Master Inventory (Raw)</h2>
+            <h2>Master Raw Goods</h2>
         </div>
         <div class="form-group">
-            <button type="button" class="btn-primary" onclick="openRawItemModal()">
-                <span class="material-symbols-outlined">add</span> Create New Material Type
-            </button>
             
-            <div class="raw-grid" id="rawMasterGrid">
-                <div style="text-align:center; padding: 20px; color: var(--text-muted);">Loading master inventory...</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal" id="modalRawItem">
-        <div class="modal-header">
-            <button class="close-modal" onclick="history.back()"><span class="material-symbols-outlined">arrow_back</span></button>
-            <h2 id="rawItemTitle">Define New Material</h2>
-        </div>
-        <div class="form-group">
-            <div class="input-wrapper">
-                <label>Material Name *</label>
-                <input type="text" id="rName" placeholder="e.g. 1L Empty Bottle">
-            </div>
-            
-            <div class="row-inputs">
+            <div style="background: var(--bg-surface); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 24px; box-shadow: var(--shadow-sm);">
+                <h3 style="margin-bottom: 16px; font-size: 1.05rem; font-weight: 700;">Add New Official Material</h3>
                 <div class="input-wrapper">
-                    <label>Unit (UOM) *</label>
-                    <select id="rUom">
-                        <option value="Pieces">Pieces</option>
-                        <option value="KGs">KGs</option>
-                        <option value="Liters">Liters</option>
-                        <option value="Rolls">Rolls</option>
-                        <option value="Boxes">Boxes</option>
-                        <option value="Grams">Grams</option>
-                    </select>
+                    <label>Exact Material Name *</label>
+                    <input type="text" id="rgName" placeholder="e.g. 1L Premium Blue Caps">
                 </div>
-                <div class="input-wrapper" id="rStockWrapper">
-                    <label>Opening Stock *</label>
-                    <input type="number" id="rStock" placeholder="0" min="0">
+                <div class="row-inputs">
+                    <div class="input-wrapper">
+                        <label>Unit of Measure *</label>
+                        <select id="rgUom">
+                            <option value="Pieces">Pieces (Nos)</option>
+                            <option value="KGs">KGs</option>
+                            <option value="Liters">Liters</option>
+                            <option value="Rolls">Rolls</option>
+                            <option value="Boxes">Boxes</option>
+                        </select>
+                    </div>
+                    <div class="input-wrapper">
+                        <label>Opening Stock *</label>
+                        <input type="number" id="rgOpeningStock" placeholder="0" min="0">
+                    </div>
                 </div>
+                <button type="button" class="btn-primary" id="btnSaveRawGood" style="padding: 14px;">
+                    <span class="material-symbols-outlined">add_task</span> Add to Master List
+                </button>
             </div>
-
-            <button type="button" class="btn-primary" id="btnSaveRawItem">
-                <span class="material-symbols-outlined">add_circle</span> Save Material
-            </button>
+            
+            <h3 style="margin-bottom: 12px; font-size: 1rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Current Master Stock</h3>
+            <div id="rawGoodsGrid" style="display: grid; gap: 12px;">
+                </div>
         </div>
     </div>
 
@@ -375,7 +360,7 @@
     <script type="module">
         import { app, db } from './config.js';
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-        // Added increment for batch updating master stock safely
+        // NEW: Imported `increment` for math operations
         import { collection, doc, getDocs, query, orderBy, limit, startAfter, where, writeBatch, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
         // Navigation Setup
@@ -456,126 +441,118 @@
         let hasMore = true;
         let currentSearch = '';
         let purchaseCache = [];
-        let rawMasterCache = []; // Caches the godown inventory
         let itemsCounter = 0;
+        
+        // NEW: Master List Array
+        let masterRawGoods = [];
 
-        // Auth
+        // Auth & Initial Load
         const auth = getAuth(app);
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
                 loadPurchases();
-                loadRawMasterList(); // Preload raw goods list silently
+                fetchMasterRawGoods(); // Fetch the Godown list immediately
                 document.getElementById('pDate').valueAsDate = new Date();
             } else {
                 window.location.replace('login.html');
             }
         });
 
-        // --- Master Raw Goods Logic (New Database Collection) ---
-        async function loadRawMasterList() {
+        // --- NEW: Master Godown Logic ---
+        async function fetchMasterRawGoods() {
             try {
-                const q = query(collection(db, "raw_inventory"), orderBy("name"));
+                const q = query(collection(db, "raw_goods_master"), orderBy("name"));
                 const snap = await getDocs(q);
-                rawMasterCache = [];
-                let html = '';
-                
+                masterRawGoods = [];
                 snap.forEach(doc => {
-                    const data = { id: doc.id, ...doc.data() };
-                    rawMasterCache.push(data);
-                    html += `
-                        <div class="raw-card">
-                            <div class="raw-card-info">
-                                <span class="raw-name">${data.name}</span>
-                                <span class="raw-uom">${data.uom}</span>
-                            </div>
-                            <div class="raw-stock-badge">${(data.currentStock || 0).toLocaleString()}</div>
-                        </div>
-                    `;
+                    masterRawGoods.push({ id: doc.id, ...doc.data() });
                 });
                 
-                if (rawMasterCache.length === 0) {
-                    html = '<div style="text-align:center; padding: 20px; color: var(--text-muted); width:100%;">No raw materials defined yet. Click "Create New" above.</div>';
-                }
-                document.getElementById('rawMasterGrid').innerHTML = html;
-            } catch (error) {
-                console.error("Error loading master list:", error);
+                // Dynamically update the Datalist
+                const dl = document.getElementById('rawMaterialsList');
+                dl.innerHTML = ''; 
+                masterRawGoods.forEach(good => {
+                    dl.innerHTML += `<option value="${good.name}">`;
+                });
+                
+                renderMasterGoodsGrid();
+            } catch (err) {
+                console.error("Failed to load master list:", err);
             }
         }
 
-        window.openMasterListModal = function() {
-            openModal('modalMasterList');
-        };
+        function renderMasterGoodsGrid() {
+            const grid = document.getElementById('rawGoodsGrid');
+            if(masterRawGoods.length === 0) {
+                grid.innerHTML = '<div style="text-align:center; padding: 20px; color:var(--text-muted);">No raw materials created yet.</div>';
+                return;
+            }
+            grid.innerHTML = masterRawGoods.map(g => `
+                <div class="master-good-card">
+                    <div>
+                        <div class="mg-name">${g.name}</div>
+                        <div class="mg-uom">UOM: ${g.uom}</div>
+                    </div>
+                    <div>
+                        <div class="mg-stock">${(g.currentStock || 0).toLocaleString('en-IN')}</div>
+                        <div class="mg-label">In Stock</div>
+                    </div>
+                </div>
+            `).join('');
+        }
 
-        window.openRawItemModal = function() {
-            document.getElementById('rName').value = '';
-            document.getElementById('rUom').value = 'Pieces';
-            document.getElementById('rStock').value = '';
-            document.getElementById('rStockWrapper').style.display = 'block'; // Only show opening stock on create
-            openModal('modalRawItem');
-        };
-
-        document.getElementById('btnSaveRawItem').addEventListener('click', async () => {
+        document.getElementById('btnSaveRawGood').addEventListener('click', async () => {
             vibrateApp(30);
-            const name = document.getElementById('rName').value.trim();
-            const uom = document.getElementById('rUom').value;
-            const openingStock = parseFloat(document.getElementById('rStock').value) || 0;
+            const name = document.getElementById('rgName').value.trim();
+            const uom = document.getElementById('rgUom').value;
+            const openingStock = parseInt(document.getElementById('rgOpeningStock').value) || 0;
+            
+            if(!name) { showToast("Material name is required", "error"); return; }
+            if(masterRawGoods.find(r => r.name.toLowerCase() === name.toLowerCase())) {
+                showToast("This material already exists!", "error"); return;
+            }
 
-            if (!name) { showToast("Material name is required.", "error"); return; }
-
-            const btn = document.getElementById('btnSaveRawItem');
-            btn.disabled = true; btn.innerHTML = "Saving...";
+            const btn = document.getElementById('btnSaveRawGood');
+            btn.disabled = true; btn.innerHTML = "Adding...";
 
             try {
                 const batch = writeBatch(db);
-                const newRef = doc(collection(db, "raw_inventory"));
-                
+                const newRef = doc(collection(db, "raw_goods_master"));
                 batch.set(newRef, {
-                    name,
-                    uom,
-                    openingStock,
-                    currentStock: openingStock, // Initial stock is the opening stock
+                    name: name,
+                    uom: uom,
+                    currentStock: openingStock, // Opening stock becomes current stock
                     createdAt: serverTimestamp(),
                     createdBy: currentUser.displayName || "Admin"
                 });
 
                 await batch.commit();
-                showToast("New raw material added!", "success");
-                history.back(); // Close add modal
-                await loadRawMasterList(); // Refresh the list
-            } catch (err) {
+                
+                document.getElementById('rgName').value = '';
+                document.getElementById('rgOpeningStock').value = '';
+                showToast("New Master Good Created!", "success");
+                
+                await fetchMasterRawGoods(); // Refresh list
+
+            } catch(err) {
                 console.error(err);
-                showToast("Failed to save raw material.", "error");
+                showToast("Failed to create material", "error");
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = `<span class="material-symbols-outlined">add_circle</span> Save Material`;
+                btn.innerHTML = `<span class="material-symbols-outlined">add_task</span> Add to Master List`;
             }
         });
 
-
-        // --- Dynamic Items Logic (Modified for Strict Dropdown) ---
-        window.addEmptyItemRow = function(nameId='', qty='', price='') {
+        // --- Dynamic Items Logic ---
+        window.addEmptyItemRow = function(name='', qty='', price='') {
             itemsCounter++;
             const id = `item_row_${itemsCounter}`;
             const container = document.getElementById('itemsContainer');
             
-            // Build strictly controlled dropdown options
-            let optionsHtml = '<option value="" disabled selected>Select Master Material...</option>';
-            rawMasterCache.forEach(r => {
-                const isSelected = r.id === nameId || r.name === nameId ? 'selected' : '';
-                optionsHtml += `<option value="${r.id}" data-name="${r.name}" ${isSelected}>${r.name} (${r.uom})</option>`;
-            });
-            
-            if (rawMasterCache.length === 0) {
-                optionsHtml = '<option value="" disabled selected>⚠️ No materials in Master Godown</option>';
-            }
-
-            // Replacing the free-text input with the strict select dropdown
             const html = `
                 <div class="item-row" id="${id}">
-                    <select class="i-name" onchange="calcTotal()">
-                        ${optionsHtml}
-                    </select>
+                    <input type="text" placeholder="Select Official Material..." list="rawMaterialsList" value="${name}" class="i-name" oninput="calcTotal()">
                     <input type="number" placeholder="Qty" min="1" value="${qty}" class="i-qty" oninput="calcTotal()">
                     <input type="number" placeholder="Cost" min="0" step="0.01" value="${price}" class="i-price" oninput="calcTotal()">
                     <button type="button" class="btn-remove-row" onclick="vibrateApp(20); document.getElementById('${id}').remove(); calcTotal();">
@@ -612,7 +589,7 @@
                 document.getElementById('pInvoice').value = data.receiptNo;
                 document.getElementById('pDate').value = data.date;
                 
-                data.items.forEach(i => addEmptyItemRow(i.rawId || i.name, i.qty, i.unitPrice));
+                data.items.forEach(i => addEmptyItemRow(i.name, i.qty, i.unitPrice));
                 
                 document.getElementById('editReasonWrapper').style.display = 'block';
                 document.getElementById('pEditReason').value = '';
@@ -640,7 +617,7 @@
             openModal('modalPurchase');
         };
 
-        // Save Logic
+        // NEW UPGRADED SAVE LOGIC WITH MASTER LIST VALIDATION AND INCREMENTING
         document.getElementById('btnSavePurchase').addEventListener('click', async () => {
             vibrateApp(30);
             const id = document.getElementById('editPurchaseId').value;
@@ -658,27 +635,41 @@
 
             const items = [];
             let validItems = true;
+            let allExistInMaster = true; // Strict validation flag
+
             document.querySelectorAll('.item-row').forEach(row => {
-                const selectEl = row.querySelector('.i-name');
-                const rawId = selectEl.value;
-                const rawName = selectEl.options[selectEl.selectedIndex]?.getAttribute('data-name') || '';
+                const n = row.querySelector('.i-name').value.trim();
                 const q = parseFloat(row.querySelector('.i-qty').value) || 0;
                 const p = parseFloat(row.querySelector('.i-price').value) || 0;
                 
-                if(rawId && q > 0) {
-                    items.push({ rawId: rawId, name: rawName, qty: q, unitPrice: p, total: q * p });
-                } else if (rawId || q > 0 || p > 0) {
+                if(n && q > 0) {
+                    // Force user to select from Official Master List
+                    const matchedGood = masterRawGoods.find(r => r.name.toLowerCase() === n.toLowerCase());
+                    if(!matchedGood) {
+                        allExistInMaster = false;
+                    } else {
+                        items.push({ 
+                            name: matchedGood.name, 
+                            rawGoodId: matchedGood.id, 
+                            uom: matchedGood.uom, 
+                            qty: q, 
+                            unitPrice: p, 
+                            total: q * p 
+                        });
+                    }
+                } else if (n || q > 0 || p > 0) {
                     validItems = false; // partially filled row
                 }
             });
 
             if(!validItems) { showToast("Please complete all item rows properly.", "error"); return; }
+            if(!allExistInMaster) { showToast("One or more items are not in the Master List. Create them using the top-right icon first.", "error"); return; }
             if(items.length === 0) { showToast("Add at least one raw material.", "error"); return; }
 
             const grandTotal = items.reduce((sum, item) => sum + item.total, 0);
             
             const btn = document.getElementById('btnSavePurchase');
-            btn.disabled = true; btn.innerHTML = "Saving...";
+            btn.disabled = true; btn.innerHTML = "Committing to Database...";
 
             try {
                 const batch = writeBatch(db);
@@ -696,6 +687,7 @@
                     lastUpdated: new Date().toISOString()
                 };
 
+                // INCREMENT LOGIC FOR MASTER STOCK
                 if (isUpdate) {
                     const existingData = purchaseCache.find(p => p.id === id);
                     const logs = existingData.editLogs || [];
@@ -706,37 +698,41 @@
                     });
                     payload.editLogs = logs;
                     batch.update(docRef, payload);
-                    
-                    // NOTE: Advanced logic for editing existing quantities in Master Inventory 
-                    // is highly complex (requires calculating the diff). For this scope, 
-                    // we log the edit but do not auto-adjust the master stock on edit to prevent math errors.
+
+                    // Revert old quantities, then add new quantities
+                    existingData.items.forEach(oldItem => {
+                        if(oldItem.rawGoodId) {
+                            const rawRef = doc(db, "raw_goods_master", oldItem.rawGoodId);
+                            batch.update(rawRef, { currentStock: increment(-oldItem.qty) });
+                        }
+                    });
+                    items.forEach(newItem => {
+                        const rawRef = doc(db, "raw_goods_master", newItem.rawGoodId);
+                        batch.update(rawRef, { currentStock: increment(newItem.qty), lastUpdated: new Date().toISOString() });
+                    });
                 } else {
                     payload.createdAt = serverTimestamp();
                     payload.createdBy = currentUser.displayName || "Admin";
                     batch.set(docRef, payload);
                     
-                    // NOTE: In a full system, you would also loop through `items` here 
-                    // and write updates to the `inventory` collection to increase raw stock.
-                    // e.g. batch.update(doc(db, "inventory", itemID), { qty: increment(item.qty) })
-                    // --- IMPLEMENTATION ADDED BELOW ---
-                    items.forEach(item => {
-                        const rawMasterRef = doc(db, "raw_inventory", item.rawId);
-                        batch.update(rawMasterRef, { 
-                            currentStock: increment(item.qty),
-                            lastUpdated: new Date().toISOString() 
-                        });
+                    // Add purely new quantities to master stock
+                    items.forEach(newItem => {
+                        const rawRef = doc(db, "raw_goods_master", newItem.rawGoodId);
+                        batch.update(rawRef, { currentStock: increment(newItem.qty), lastUpdated: new Date().toISOString() });
                     });
                 }
 
+                // Execute the entire mathematical update at once
                 await batch.commit();
+                
                 showToast(`Purchase ${isUpdate ? 'updated' : 'recorded'} successfully!`, "success");
                 history.back();
                 
-                // Reload lists
+                // Refresh data
+                fetchMasterRawGoods(); 
                 currentSearch = '';
                 document.getElementById('searchInput').value = '';
                 loadPurchases();
-                loadRawMasterList(); // Refresh the master stock UI silently
 
             } catch (err) {
                 console.error(err);
