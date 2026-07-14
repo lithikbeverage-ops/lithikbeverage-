@@ -237,6 +237,9 @@
             bottom: 90px; /* Safely clears the 65px mobile nav */
             left: 50%;
             transform: translate(-50%, 150%); /* Start hidden below screen */
+            visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
             width: 90%;
             max-width: 360px;
             background-color: var(--bg-surface);
@@ -248,10 +251,16 @@
             align-items: center;
             justify-content: space-between;
             z-index: 9999; /* Absolute top layer */
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s, visibility 0.4s;
         }
 
-        #install-banner.show { transform: translate(-50%, 0); }
+        #install-banner.show { 
+            transform: translate(-50%, 0); 
+            visibility: visible;
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
         .install-info { display: flex; flex-direction: column; gap: 4px; }
         .install-info strong { font-size: 0.95rem; color: var(--text-main); }
         .install-info span { font-size: 0.8rem; color: var(--text-muted); }
@@ -466,13 +475,24 @@
         const btnInstall = document.getElementById('btn-install-app');
         const btnClose = document.getElementById('btn-close-banner');
 
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            setTimeout(() => {
-                installBanner.classList.add('show');
-                hapticVibrate([30, 50, 30]);
-            }, 2000);
+        // Check if the app is already running in Standalone (installed) mode
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+        if (!isStandalone) {
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                setTimeout(() => {
+                    installBanner.classList.add('show');
+                    hapticVibrate([30, 50, 30]);
+                }, 2000);
+            });
+        }
+
+        // Hide banner immediately if the user completes installation during session
+        window.addEventListener('appinstalled', () => {
+            installBanner.classList.remove('show');
+            deferredPrompt = null;
         });
 
         btnInstall.addEventListener('click', async () => {
