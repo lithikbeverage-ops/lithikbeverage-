@@ -67,6 +67,7 @@
         /* Structural Fixes for Mobile Layout */
         #app-shell {
             display: flex;
+            height: 100vh; /* Fallback for older browsers */
             height: 100dvh; /* Uses dynamic viewport height to prevent iOS safari clipping */
             flex-direction: column;
         }
@@ -139,7 +140,8 @@
             display: flex;
             background-color: var(--bg-nav);
             border-top: 1px solid var(--border-color);
-            height: 65px;
+            min-height: 65px;
+            height: calc(65px + env(safe-area-inset-bottom));
             width: 100%;
             overflow-x: auto;
             overflow-y: hidden;
@@ -147,6 +149,7 @@
             padding: 0 10px;
             flex-shrink: 0; /* Locks to bottom, won't get pushed off screen */
             padding-bottom: env(safe-area-inset-bottom); /* Fix for iPhone home indicator */
+            z-index: 100;
         }
 
         .nav-item {
