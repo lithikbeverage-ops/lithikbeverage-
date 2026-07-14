@@ -14,36 +14,35 @@
     <style>
         /* CSS Variables */
         :root {
-            --bg-body: #f1f5f9;
+            --bg-body: #f8fafc;
             --bg-surface: #ffffff;
             --bg-nav: #ffffff;
             --text-main: #0f172a;
             --text-muted: #64748b;
             --primary-color: #1e40af;
-            --primary-hover: #1e3a8a;
             --border-color: #e2e8f0;
-            --danger: #ef4444;
-            --success: #10b981;
             --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --skeleton-base: #e2e8f0;
+            --skeleton-shine: #f8fafc;
         }
 
         @media (prefers-color-scheme: dark) {
             :root {
                 --bg-body: #020617;
                 --bg-surface: #0f172a;
-                --bg-nav: #1e293b;
+                --bg-nav: #0f172a;
                 --text-main: #f8fafc;
                 --text-muted: #94a3b8;
                 --primary-color: #3b82f6;
-                --primary-hover: #60a5fa;
-                --border-color: #334155;
+                --border-color: #1e293b;
                 --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
                 --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+                --skeleton-base: #1e293b;
+                --skeleton-shine: #334155;
             }
         }
 
-        /* Reset & Layout */
         * {
             box-sizing: border-box;
             -webkit-user-select: none;
@@ -57,24 +56,21 @@
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-body);
             color: var(--text-main);
-            height: 100vh;
+            height: 100%;
             width: 100vw;
-            overflow: hidden; /* Prevent body scroll, handle scroll in main */
+            overflow: hidden; 
         }
 
-        /* Aggressively Hide All Scrollbars */
         *::-webkit-scrollbar { display: none !important; }
         * { -ms-overflow-style: none !important; scrollbar-width: none !important; }
 
-        /* Application Shell */
+        /* Structural Fixes for Mobile Layout */
         #app-shell {
             display: flex;
-            height: 100vh;
-            width: 100vw;
+            height: 100dvh; /* Uses dynamic viewport height to prevent iOS safari clipping */
             flex-direction: column;
         }
 
-        /* Header */
         header {
             display: flex;
             align-items: center;
@@ -83,19 +79,17 @@
             padding: 12px 20px;
             border-bottom: 1px solid var(--border-color);
             z-index: 10;
+            flex-shrink: 0; /* Prevents header from collapsing */
         }
 
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        
         .company-logo {
             width: 40px;
             height: 40px;
             border-radius: 8px;
             object-fit: cover;
+            box-shadow: var(--shadow-sm);
         }
 
         h1 {
@@ -114,19 +108,16 @@
             object-fit: cover;
             transition: transform 0.2s;
         }
+        .profile-pic:active { transform: scale(0.9); }
 
-        .profile-pic:active {
-            transform: scale(0.9);
-        }
-
-        /* Navigation Layout Control */
+        /* Nav & Main Layout */
         .layout-container {
             display: flex;
             flex: 1;
             overflow: hidden;
+            min-height: 0; /* Crucial flexbox fix for scrolling children */
         }
 
-        /* Desktop Sidebar (Hidden on Mobile) */
         nav.sidebar {
             display: none;
             width: 260px;
@@ -137,17 +128,25 @@
             overflow-y: auto;
         }
 
-        /* Mobile Bottom Nav (Hidden on Desktop) */
+        main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: var(--bg-body);
+        }
+
         nav.bottom-nav {
             display: flex;
             background-color: var(--bg-nav);
             border-top: 1px solid var(--border-color);
-            height: 70px;
+            height: 65px;
             width: 100%;
-            overflow-x: auto; /* Horizontal scroll for many items */
+            overflow-x: auto;
             overflow-y: hidden;
             scroll-behavior: smooth;
             padding: 0 10px;
+            flex-shrink: 0; /* Locks to bottom, won't get pushed off screen */
+            padding-bottom: env(safe-area-inset-bottom); /* Fix for iPhone home indicator */
         }
 
         .nav-item {
@@ -159,7 +158,6 @@
             cursor: pointer;
         }
 
-        /* Desktop Nav Item Styles */
         nav.sidebar .nav-item {
             padding: 14px 24px;
             gap: 16px;
@@ -173,13 +171,12 @@
             border-right: 3px solid var(--primary-color);
         }
 
-        /* Mobile Nav Item Styles */
         nav.bottom-nav .nav-item {
             flex-direction: column;
             justify-content: center;
-            min-width: 72px; /* Ensure they don't shrink too much */
+            min-width: 72px;
             padding: 8px 4px;
-            gap: 6px;
+            gap: 4px;
             font-size: 0.75rem;
             font-weight: 600;
         }
@@ -188,43 +185,56 @@
             color: var(--primary-color);
         }
 
-        .nav-icon {
-            width: 24px;
-            height: 24px;
-            fill: currentColor;
-        }
+        .nav-icon { width: 24px; height: 24px; fill: currentColor; }
 
-        /* Main Content Area */
-        main {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            background-color: var(--bg-body);
-        }
-
-        /* Dashboard Placeholder Styles */
+        /* Dashboard UI */
         .dashboard-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px;
-            margin-top: 20px;
+            margin-top: 24px;
         }
 
         .stat-card {
             background-color: var(--bg-surface);
-            padding: 20px;
+            padding: 24px;
             border-radius: 12px;
             border: 1px solid var(--border-color);
             box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
         
-        .stat-card h3 { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 10px; }
-        .stat-card .value { font-size: 1.8rem; font-weight: 700; color: var(--text-main); }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .stat-card h3 { font-size: 0.95rem; font-weight: 600; color: var(--text-muted); }
+        .stat-card .value { font-size: 2rem; font-weight: 800; color: var(--text-main); min-height: 38px; }
 
-        /* PWA Install Prompt Banner */
+        /* Skeleton Loading Animation */
+        .skeleton {
+            background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-shine) 50%, var(--skeleton-base) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 6px;
+            color: transparent !important;
+            display: inline-block;
+            width: 60%;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Install Banner */
         #install-banner {
             position: fixed;
-            bottom: 80px; /* Above mobile nav */
+            bottom: 85px; 
             left: 50%;
             transform: translateX(-50%) translateY(150%);
             width: 90%;
@@ -241,47 +251,15 @@
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        #install-banner.show {
-            transform: translateX(-50%) translateY(0);
-        }
-
-        .install-info {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
+        #install-banner.show { transform: translateX(-50%) translateY(0); }
+        .install-info { display: flex; flex-direction: column; gap: 4px; }
         .install-info strong { font-size: 0.95rem; }
         .install-info span { font-size: 0.8rem; color: var(--text-muted); }
+        .install-actions { display: flex; gap: 10px; }
+        .btn-install { background-color: var(--primary-color); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+        .btn-close { background: none; border: none; color: var(--text-muted); padding: 8px; font-size: 1.2rem; cursor: pointer; }
 
-        .install-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn-install {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .btn-close {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            padding: 8px;
-            font-size: 1.2rem;
-            cursor: pointer;
-        }
-
-        /* Media Queries for Desktop layout */
         @media (min-width: 768px) {
-            #app-shell { flex-direction: column; }
-            .layout-container { flex-direction: row; }
             nav.bottom-nav { display: none; }
             nav.sidebar { display: flex; }
             #install-banner { bottom: 20px; left: auto; right: 20px; transform: translateX(120%); }
@@ -290,6 +268,16 @@
     </style>
 </head>
 <body>
+
+    <script>
+        const savedPic = localStorage.getItem('lithik_profile_pic');
+        if(savedPic) {
+            // Apply a small delay so the DOM has a chance to parse the header element
+            document.addEventListener("DOMContentLoaded", () => {
+                document.getElementById('header-profile-pic').src = savedPic;
+            });
+        }
+    </script>
 
     <div id="app-shell">
         <header>
@@ -301,37 +289,35 @@
         </header>
 
         <div class="layout-container">
-            <nav class="sidebar" id="desktop-nav">
-                </nav>
+            <nav class="sidebar" id="desktop-nav"></nav>
 
             <main id="main-view">
-                <h2 style="font-size: 1.5rem; font-weight: 700;">Dashboard Overview</h2>
-                <p style="color: var(--text-muted); margin-top: 5px;">Welcome back. Here is today's summary.</p>
+                <h2 style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px;">Dashboard Overview</h2>
+                <p style="color: var(--text-muted); margin-top: 4px; font-size: 0.95rem;">Live factory metrics for today.</p>
                 
                 <div class="dashboard-grid">
                     <div class="stat-card">
-                        <h3>Today's Production</h3>
-                        <div class="value">1,240 Cases</div>
+                        <h3>Cases Produced</h3>
+                        <div class="value skeleton" id="stat-production">0</div>
                     </div>
                     <div class="stat-card">
                         <h3>Invoices Generated</h3>
-                        <div class="value">45</div>
+                        <div class="value skeleton" id="stat-invoices">0</div>
                     </div>
                     <div class="stat-card">
                         <h3>Labour Present</h3>
-                        <div class="value">18 / 20</div>
+                        <div class="value skeleton" id="stat-labour">0</div>
                     </div>
                 </div>
             </main>
         </div>
 
-        <nav class="bottom-nav" id="mobile-nav">
-            </nav>
+        <nav class="bottom-nav" id="mobile-nav"></nav>
     </div>
 
     <div id="install-banner">
         <div class="install-info">
-            <strong>Install LITHIK App</strong>
+            <strong>Install App</strong>
             <span>Add to home screen for offline use</span>
         </div>
         <div class="install-actions">
@@ -343,9 +329,7 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(reg => console.log('SW registered!', reg))
-                    .catch(err => console.error('SW failed', err));
+                navigator.serviceWorker.register('/sw.js');
             });
         }
     </script>
@@ -353,21 +337,82 @@
     <script type="module">
         import { app, db } from './config.js';
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+        import { collection, query, where, getDocs, getCountFromServer } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
         const auth = getAuth(app);
 
-        // 1. Authentication Check
+        // 1. Auth & Local Storage Profile Pic update
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // User is signed in, set profile picture
-                document.getElementById('header-profile-pic').src = user.photoURL || 'https://via.placeholder.com/40';
+                const picUrl = user.photoURL || 'https://via.placeholder.com/40';
+                document.getElementById('header-profile-pic').src = picUrl;
+                localStorage.setItem('lithik_profile_pic', picUrl);
+                
+                // User authorized, fetch real data
+                fetchDashboardData();
             } else {
-                // No user is signed in, boot them to login
                 window.location.replace('login.html');
             }
         });
 
-        // 2. Navigation Structure & Generation
+        // 2. Fetch Real Data from Firestore
+        async function fetchDashboardData() {
+            // Get today's start and end timestamps for querying
+            const startOfDay = new Date();
+            startOfDay.setHours(0, 0, 0, 0);
+            
+            const endOfDay = new Date();
+            endOfDay.setHours(23, 59, 59, 999);
+
+            try {
+                // Query 1: Today's Production (Sum of cases produced)
+                const prodQuery = query(collection(db, "production"), 
+                    where("timestamp", ">=", startOfDay), 
+                    where("timestamp", "<=", endOfDay)
+                );
+                const prodSnapshot = await getDocs(prodQuery);
+                let totalCases = 0;
+                prodSnapshot.forEach((doc) => { totalCases += doc.data().cases || 0; });
+                
+                updateStatUI('stat-production', totalCases);
+
+                // Query 2: Invoices Generated (Count of documents in sales collection today)
+                const salesQuery = query(collection(db, "sales"), 
+                    where("timestamp", ">=", startOfDay), 
+                    where("timestamp", "<=", endOfDay)
+                );
+                const salesSnapshot = await getCountFromServer(salesQuery);
+                
+                updateStatUI('stat-invoices', salesSnapshot.data().count);
+
+                // Query 3: Labour Present (Count of attendance docs today)
+                const labourQuery = query(collection(db, "attendance"), 
+                    where("date_string", "==", startOfDay.toISOString().split('T')[0]),
+                    where("status", "==", "present")
+                );
+                const labourSnapshot = await getCountFromServer(labourQuery);
+                
+                updateStatUI('stat-labour', labourSnapshot.data().count);
+
+            } catch (error) {
+                console.error("Error fetching dashboard data:", error);
+                // In case of error (or empty database rules blocking read), fail gracefully
+                updateStatUI('stat-production', '0');
+                updateStatUI('stat-invoices', '0');
+                updateStatUI('stat-labour', '0');
+            }
+        }
+
+        // Helper function to remove skeleton and set value
+        function updateStatUI(elementId, value) {
+            const el = document.getElementById(elementId);
+            if(el) {
+                el.classList.remove('skeleton');
+                el.innerText = value.toLocaleString(); // Adds commas to large numbers
+            }
+        }
+
+        // 3. Navigation Generation
         const navItems = [
             { name: 'Dashboard', id: 'nav-home', path: 'index.html', icon: '<path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>' },
             { name: 'Billing', id: 'nav-bill', path: 'bill.html', icon: '<path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/>' },
@@ -397,45 +442,35 @@
             mobileNav.innerHTML += html;
         });
 
-        // 3. Haptic Feedback Utility
+        // 4. Haptic Feedback Utility
         function hapticVibrate(pattern) {
             if ('vibrate' in navigator) navigator.vibrate(pattern);
         }
 
-        // Add vibration to all nav items on click
         document.querySelectorAll('.nav-item').forEach(el => {
             el.addEventListener('click', () => hapticVibrate(40));
         });
 
-        // 4. PWA Installation Logic
+        // 5. PWA Installation Logic
         let deferredPrompt;
         const installBanner = document.getElementById('install-banner');
         const btnInstall = document.getElementById('btn-install-app');
         const btnClose = document.getElementById('btn-close-banner');
 
         window.addEventListener('beforeinstallprompt', (e) => {
-            // Prevent Chrome from automatically showing the default prompt
             e.preventDefault();
-            // Stash the event so it can be triggered later.
             deferredPrompt = e;
-            // Show custom professional banner
             setTimeout(() => {
                 installBanner.classList.add('show');
-                hapticVibrate([30, 50, 30]); // Notify user it appeared
-            }, 2000); // Delay showing for 2 seconds after page load
+                hapticVibrate([30, 50, 30]);
+            }, 2000);
         });
 
         btnInstall.addEventListener('click', async () => {
             hapticVibrate(50);
             if (deferredPrompt) {
-                // Show the system install prompt
                 deferredPrompt.prompt();
-                // Wait for the user to respond
                 const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    console.log('User accepted the install prompt');
-                }
-                // Clear prompt and hide banner
                 deferredPrompt = null;
                 installBanner.classList.remove('show');
             }
