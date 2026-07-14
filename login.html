@@ -14,7 +14,7 @@
             --surface-color: #ffffff;
             --text-main: #0f172a;
             --text-muted: #64748b;
-            --primary-color: #0056b3;
+            --primary-color: #1e40af; /* A deep, rich, professional navy blue */
             --border-color: #e2e8f0;
         }
 
@@ -24,7 +24,7 @@
                 --surface-color: #0f172a;
                 --text-main: #f8fafc;
                 --text-muted: #94a3b8;
-                --primary-color: #38bdf8;
+                --primary-color: #3b82f6; /* A softer, less neon blue for dark mode */
                 --border-color: #1e293b;
             }
         }
@@ -58,19 +58,19 @@
         }
 
         .left-panel {
-            flex: 1;
+            flex: 0 1 auto; /* Mobile Fix: Only takes required space, prevents stretching */
             background-color: var(--surface-color);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 40px 20px;
+            padding: 40px 20px 30px 20px;
             text-align: center;
             border-bottom: 1px solid var(--border-color);
         }
 
         .right-panel {
-            flex: 1;
+            flex: 1; /* Mobile Fix: Takes the remaining space smoothly */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -186,12 +186,14 @@
             }
 
             .left-panel {
+                flex: 1; /* PC Fix: Restores the perfect 50/50 split on large screens */
                 border-bottom: none;
                 border-right: 1px solid var(--border-color);
                 padding: 60px;
             }
 
             .right-panel {
+                flex: 1; /* PC Fix: Restores the perfect 50/50 split on large screens */
                 padding: 60px;
             }
 
