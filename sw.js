@@ -1,6 +1,6 @@
 // sw.js
 
-const CACHE_NAME = 'lithik-beverage-v1';
+const CACHE_NAME = 'lithik-beverage-v2';
 
 // List of static assets to cache for offline use
 const ASSETS_TO_CACHE = [
