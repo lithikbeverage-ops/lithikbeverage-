@@ -15,6 +15,7 @@
             --text-main: #0f172a;
             --text-muted: #64748b;
             --primary-color: #1e40af; /* A deep, rich, professional navy blue */
+            --focus-ring: rgba(30, 64, 175, 0.2);
             --border-color: #e2e8f0;
         }
 
@@ -25,6 +26,7 @@
                 --text-main: #f8fafc;
                 --text-muted: #94a3b8;
                 --primary-color: #2563eb; /* Darker, more professional blue for dark mode */
+                --focus-ring: rgba(37, 99, 235, 0.25);
                 --border-color: #1e293b;
             }
         }
@@ -36,6 +38,21 @@
             -moz-user-select: none;    /* Firefox */
             -ms-user-select: none;     /* IE10+/Edge */
             user-select: none;         /* Standard */
+            -webkit-tap-highlight-color: transparent; /* Removes default blue tap highlight on mobile */
+        }
+
+        /* Aggressively Hide All Scrollbars Everywhere */
+        html, body, * {
+            -ms-overflow-style: none !important;  /* IE and Edge */
+            scrollbar-width: none !important;  /* Firefox */
+        }
+        
+        *::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+            background: transparent !important;
+            -webkit-appearance: none !important;
         }
 
         body {
@@ -43,21 +60,11 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
-            min-height: 100vh; /* Changed to min-height so mobile can expand */
+            min-height: 100vh;
             width: 100vw;
-            
-            /* Allow scrolling but completely hide the scrollbar */
             overflow-y: auto;
             overflow-x: hidden;
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
-            
             transition: background-color 0.3s ease, color 0.3s ease;
-        }
-
-        /* Hide scrollbar for Chrome, Safari and Opera */
-        body::-webkit-scrollbar {
-            display: none;
         }
 
         /* Full Screen Split Layout */
@@ -65,7 +72,7 @@
             display: flex;
             flex-direction: column;
             width: 100%;
-            min-height: 100vh; /* Mobile Fix: Allows natural stacking without squishing */
+            min-height: 100vh;
         }
 
         .left-panel {
@@ -97,8 +104,8 @@
             border-radius: 50%;
             object-fit: cover;
             margin-bottom: 24px;
-            pointer-events: none; /* Prevents dragging the image */
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            pointer-events: none;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
@@ -116,7 +123,7 @@
             margin: 0;
         }
 
-        /* Auth Container to keep right side tidy */
+        /* Auth Container */
         .auth-content {
             width: 100%;
             max-width: 380px;
@@ -148,18 +155,27 @@
             align-items: center;
             justify-content: center;
             gap: 12px;
-            transition: opacity 0.2s, transform 0.1s;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
 
         button:active:not(:disabled) {
-            opacity: 0.8;
-            transform: scale(0.98);
+            opacity: 0.9;
+            transform: scale(0.98) translateY(0);
+            box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
         }
 
         button:disabled {
             opacity: 0.7;
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         /* Loading Spinner CSS */
@@ -170,7 +186,7 @@
             width: 20px;
             height: 20px;
             animation: spin 1s linear infinite;
-            display: none; /* Hidden by default */
+            display: none;
         }
 
         @keyframes spin {
@@ -188,17 +204,18 @@
             font-size: 1rem;
             font-family: 'Inter', sans-serif;
             margin-bottom: 20px;
-            -webkit-user-select: auto; /* Allow selecting text inside input only */
+            -webkit-user-select: auto;
             user-select: auto;
-            transition: border-color 0.2s;
+            transition: all 0.2s ease;
         }
 
         input:focus {
             outline: none;
             border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px var(--focus-ring); /* Professional focus ring */
         }
 
-        /* New User Setup Section (Hidden by default) */
+        /* New User Setup Section */
         #setup-section {
             display: none;
         }
@@ -210,12 +227,13 @@
             border: 3px solid var(--primary-color);
             margin-bottom: 20px;
             object-fit: cover;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
 
         /* PC / Desktop Layout Adjustments */
         @media (min-width: 768px) {
             body {
-                overflow: hidden; /* Lock scrolling completely on large screens */
+                overflow: hidden;
             }
 
             .container {
@@ -224,14 +242,14 @@
             }
 
             .left-panel {
-                flex: 1; /* PC Fix: Restores the perfect 50/50 split on large screens */
+                flex: 1;
                 border-bottom: none;
                 border-right: 1px solid var(--border-color);
                 padding: 60px;
             }
 
             .right-panel {
-                flex: 1; /* PC Fix: Restores the perfect 50/50 split on large screens */
+                flex: 1;
                 padding: 60px;
             }
 
@@ -312,8 +330,17 @@
 
         let pendingUserData = null;
 
+        // Haptic Feedback Helper
+        function hapticVibrate(pattern) {
+            if ('vibrate' in navigator) {
+                navigator.vibrate(pattern);
+            }
+        }
+
         // Step 1: Handle Google Login
         loginBtn.addEventListener('click', async () => {
+            hapticVibrate(50); // Light tap on click
+            
             try {
                 // UI Loading State
                 loginBtn.disabled = true;
@@ -327,6 +354,7 @@
                 const userDocSnap = await getDoc(userDocRef);
 
                 if (userDocSnap.exists()) {
+                    hapticVibrate([30, 50, 30]); // Success pattern
                     window.location.href = 'index.html';
                 } else {
                     pendingUserData = user;
@@ -341,10 +369,13 @@
                     loginBtn.disabled = false;
                     loginSpinner.style.display = 'none';
                     loginBtnText.innerText = "Continue with Google";
+                    hapticVibrate([30, 50, 30]); // Success pattern for moving to step 2
                 }
             } catch (error) {
                 console.error("Login failed:", error);
+                hapticVibrate([50, 100, 50]); // Error vibration pattern
                 alert("Failed to sign in. Please try again.");
+                
                 // Revert UI State on Error
                 loginBtn.disabled = false;
                 loginSpinner.style.display = 'none';
@@ -354,9 +385,11 @@
 
         // Step 2: Save New User
         saveBtn.addEventListener('click', async () => {
+            hapticVibrate(50); // Light tap on click
             const finalName = nameInput.value.trim();
             
             if (!finalName) {
+                hapticVibrate([50, 100, 50]); // Error vibration pattern
                 alert("Please enter your name.");
                 return;
             }
@@ -376,11 +409,14 @@
                     createdAt: new Date().toISOString()
                 });
 
+                hapticVibrate([30, 50, 30]); // Success pattern
                 window.location.href = 'index.html';
 
             } catch (error) {
                 console.error("Failed to save user:", error);
+                hapticVibrate([50, 100, 50]); // Error vibration pattern
                 alert("Could not save profile. Check connection.");
+                
                 // Revert UI State on Error
                 saveBtn.disabled = false;
                 saveSpinner.style.display = 'none';
