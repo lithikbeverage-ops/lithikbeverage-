@@ -373,11 +373,31 @@
         </div>
     </div>
 
+    <!-- NEW: Master Good Delete Confirmation Modal -->
+    <div class="modal" id="modalDeleteConfirm" style="z-index: 3000;">
+        <div class="modal-header">
+            <button class="close-modal" onclick="history.back()"><span class="material-symbols-outlined">arrow_back</span></button>
+            <h2>Confirm Deletion</h2>
+        </div>
+        <div class="form-group" style="text-align: center; padding: 40px 20px;">
+            <div style="width: 80px; height: 80px; background: rgba(239, 68, 68, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto;">
+                <span class="material-symbols-outlined" style="font-size: 40px; color: var(--danger-color);">warning</span>
+            </div>
+            <h3 style="margin-bottom: 12px; font-size: 1.5rem; color: var(--text-main);">Delete Material?</h3>
+            <p style="color: var(--text-muted); margin-bottom: 32px; line-height: 1.5;">This action cannot be undone. Are you sure you want to remove this raw material from the master godown list?</p>
+            <input type="hidden" id="deleteGoodId">
+            <div style="display: flex; gap: 16px;">
+                <button type="button" onclick="history.back()" style="flex: 1; padding: 16px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); font-weight: 700; cursor: pointer; font-size: 1.1em; transition: all 0.2s;">Cancel</button>
+                <button type="button" class="btn-primary" onclick="executeDeleteMasterGood()" style="flex: 1; background: var(--danger-color); box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2); border: none;">Delete</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { app, db } from './config.js';
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-        // NEW: Imported runTransaction for server-side lock operations
-        import { collection, doc, getDocs, query, orderBy, limit, startAfter, where, writeBatch, serverTimestamp, increment, runTransaction } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+        // IMPORT deleteDoc to allow item deletion
+        import { collection, doc, getDocs, query, orderBy, limit, startAfter, where, writeBatch, serverTimestamp, increment, runTransaction, deleteDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
         // Navigation Setup
         const navItems = [
@@ -496,19 +516,51 @@
                 grid.innerHTML = '<div style="text-align:center; padding: 20px; color:var(--text-muted);">No raw materials created yet.</div>';
                 return;
             }
+            // Made UI Professional and included delete icon
             grid.innerHTML = masterRawGoods.map(g => `
-                <div class="master-good-card">
-                    <div>
-                        <div class="mg-name">${g.name}</div>
-                        <div class="mg-uom">UOM: ${g.uom}</div>
+                <div class="master-good-card" style="display:flex; justify-content:space-between; align-items:center; background: var(--bg-surface); padding: 16px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); margin-bottom: 12px;">
+                    <div style="display:flex; align-items: center; gap: 12px;">
+                        <div style="background: rgba(30, 64, 175, 0.1); color: var(--primary-color); width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                            <span class="material-symbols-outlined">inventory</span>
+                        </div>
+                        <div>
+                            <div class="mg-name" style="font-weight: 700; font-size: 1rem; color: var(--text-main);">${g.name}</div>
+                            <div class="mg-uom" style="font-size: 0.8rem; color: var(--text-muted); background: var(--input-bg); padding: 2px 8px; border-radius: 4px; margin-top: 4px; display: inline-block;">UOM: ${g.uom}</div>
+                        </div>
                     </div>
-                    <div>
-                        <div class="mg-stock">${(g.currentStock || 0).toLocaleString('en-IN')}</div>
-                        <div class="mg-label">In Stock</div>
+                    <div style="display:flex; align-items: center; gap: 16px;">
+                        <div style="text-align:right;">
+                            <div class="mg-stock" style="font-size: 1.3rem; font-weight: 800; color: var(--primary-color);">${(g.currentStock || 0).toLocaleString('en-IN')}</div>
+                            <div class="mg-label" style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">In Stock</div>
+                        </div>
+                        <button type="button" onclick="vibrateApp(20); confirmDeleteMasterGood('${g.id}')" style="background: rgba(239, 68, 68, 0.1); border: none; color: var(--danger-color); cursor: pointer; padding: 8px; display: flex; align-items: center; justify-content: center; border-radius: 8px; transition: all 0.2s;" title="Delete Material">
+                            <span class="material-symbols-outlined">delete</span>
+                        </button>
                     </div>
                 </div>
             `).join('');
         }
+        
+        window.confirmDeleteMasterGood = function(id) {
+            document.getElementById('deleteGoodId').value = id;
+            openModal('modalDeleteConfirm');
+        };
+
+        window.executeDeleteMasterGood = async function() {
+            vibrateApp(30);
+            const id = document.getElementById('deleteGoodId').value;
+            if(!id) return;
+            
+            try {
+                await deleteDoc(doc(db, "raw_goods_master", id));
+                showToast("Material deleted successfully!", "success");
+                history.back(); // Using mobile back button support automatically removes active state
+                await fetchMasterRawGoods(); 
+            } catch(err) {
+                console.error(err);
+                showToast("Failed to delete material", "error");
+            }
+        };
 
         document.getElementById('btnSaveRawGood').addEventListener('click', async () => {
             vibrateApp(30);
@@ -724,6 +776,8 @@
                         lastUpdated: new Date().toISOString()
                     };
 
+                    const stockChanges = {};
+
                     if (isUpdate) {
                         const existingData = purchaseCache.find(p => p.id === id);
                         const logs = existingData.editLogs || [];
@@ -735,28 +789,33 @@
                         payload.editLogs = logs;
                         transaction.update(docRef, payload);
 
-                        // Safely remove old quantities then push new quantities atomically
+                        // Collect negative stock offsets for previously saved items
                         existingData.items.forEach(oldItem => {
                             if(oldItem.rawGoodId) {
-                                const rawRef = doc(db, "raw_goods_master", oldItem.rawGoodId);
-                                transaction.update(rawRef, { currentStock: increment(-oldItem.qty), lastUpdated: new Date().toISOString() });
+                                stockChanges[oldItem.rawGoodId] = (stockChanges[oldItem.rawGoodId] || 0) - oldItem.qty;
                             }
-                        });
-                        items.forEach(newItem => {
-                            const rawRef = doc(db, "raw_goods_master", newItem.rawGoodId);
-                            transaction.update(rawRef, { currentStock: increment(newItem.qty), lastUpdated: new Date().toISOString() });
                         });
                     } else {
                         payload.createdAt = serverTimestamp();
                         payload.createdBy = currentUser.displayName || "Admin";
                         transaction.set(docRef, payload);
-                        
-                        // Increment Godown perfectly
-                        items.forEach(newItem => {
-                            const rawRef = doc(db, "raw_goods_master", newItem.rawGoodId);
-                            transaction.update(rawRef, { currentStock: increment(newItem.qty), lastUpdated: new Date().toISOString() });
-                        });
                     }
+
+                    // Collect positive stock offsets for newly configured items
+                    items.forEach(newItem => {
+                        stockChanges[newItem.rawGoodId] = (stockChanges[newItem.rawGoodId] || 0) + newItem.qty;
+                    });
+
+                    // Execute precisely aggregated net differences to godown items seamlessly
+                    Object.keys(stockChanges).forEach(rawGoodId => {
+                        if (stockChanges[rawGoodId] !== 0) {
+                            const rawRef = doc(db, "raw_goods_master", rawGoodId);
+                            transaction.update(rawRef, { 
+                                currentStock: increment(stockChanges[rawGoodId]), 
+                                lastUpdated: new Date().toISOString() 
+                            });
+                        }
+                    });
                 });
                 
                 showToast(`Purchase ${id ? 'updated' : 'recorded'} successfully!`, "success");
