@@ -71,11 +71,53 @@
         
         header { display: flex; align-items: center; justify-content: space-between; background-color: var(--bg-surface); padding: 12px 20px; border-bottom: 1px solid var(--border-color); z-index: 10; flex-shrink: 0; }
         .header-left { display: flex; align-items: center; gap: 12px; }
-        /* NEW: Header Right for Master List Icon */
-        .header-right { display: flex; align-items: center; }
+        /* Header Right for Master List Icon & Date Filter */
+        .header-right { display: flex; align-items: center; gap: 12px; }
+        
         .company-logo { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; box-shadow: var(--shadow-sm); }
         h1 { font-size: 1.2rem; font-weight: 800; letter-spacing: 0.5px; color: var(--primary-color); margin:0; }
         
+        /* Date Picker specific styles */
+        .header-date-picker {
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: var(--input-bg);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            height: 38px;
+        }
+        .header-date-picker:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+        .header-date-picker.active-filter {
+            background: rgba(30, 64, 175, 0.05);
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            font-weight: 600;
+        }
+        .clear-date-btn {
+            display: none; 
+            background: rgba(239, 68, 68, 0.1); 
+            border: none; 
+            color: var(--danger-color); 
+            cursor: pointer; 
+            height: 38px;
+            width: 38px;
+            border-radius: 10px;
+            align-items: center; 
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .clear-date-btn.active {
+            display: flex;
+        }
+
         .layout-container { display: flex; flex: 1; overflow: hidden; min-height: 0; }
         
         /* Navigation (Copied exactly from index) */
@@ -131,7 +173,7 @@
         .close-modal { background: none; border: none; color: var(--text-main); cursor: pointer; display: flex; padding: 8px; border-radius: 50%; margin-left: -8px; }
         .modal-header h2 { margin: 0; font-size: 1.25em; font-weight: 700; }
 
-        /* NEW: Mini Popup Modals Styling */
+        /* Mini Popup Modals Styling */
         .mini-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(15, 23, 42, 0.6); z-index: 4000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; backdrop-filter: blur(4px); }
         .mini-modal-overlay.active { opacity: 1; pointer-events: auto; }
         .mini-modal-content { background: var(--bg-surface); width: 92%; max-width: 400px; border-radius: 24px; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); transform: scale(0.95); transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid var(--border-color); }
@@ -213,7 +255,13 @@
                 <h1>PURCHASE</h1>
             </div>
             <div class="header-right">
-                <span class="material-symbols-outlined" style="font-size: 26px; color: var(--primary-color); cursor: pointer; padding: 4px; background: rgba(30, 64, 175, 0.1); border-radius: 8px;" onclick="vibrateApp(20); openModal('modalRawGoodsMaster')">inventory_2</span>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <input type="date" id="masterDateFilter" class="header-date-picker" title="Filter by Date" onchange="vibrateApp(10); applyDateFilter(this.value)">
+                    <button id="clearDateBtn" class="clear-date-btn" onclick="vibrateApp(10); clearDateFilter()" title="Clear Filter">
+                        <span class="material-symbols-outlined" style="font-size: 20px;">close</span>
+                    </button>
+                </div>
+                <span class="material-symbols-outlined" style="font-size: 26px; color: var(--primary-color); cursor: pointer; padding: 6px; background: rgba(30, 64, 175, 0.1); border-radius: 10px;" onclick="vibrateApp(20); openModal('modalRawGoodsMaster')">inventory_2</span>
             </div>
         </header>
 
@@ -252,7 +300,7 @@
                 <button class="close-modal" onclick="history.back()"><span class="material-symbols-outlined">arrow_back</span></button>
                 <h2 id="modalTitle">New Raw Goods Entry</h2>
             </div>
-            <!-- NEW: Trash Icon in Header (hidden by default) -->
+            <!-- Trash Icon in Header (hidden by default) -->
             <button class="close-modal" id="btnDeletePurchase" style="display: none; color: var(--danger-color); background: rgba(239, 68, 68, 0.1); border-radius: 8px;" onclick="vibrateApp(20); openMiniModal('miniModalDeletePurchase')">
                 <span class="material-symbols-outlined">delete</span>
             </button>
@@ -385,7 +433,7 @@
         </div>
     </div>
 
-    <!-- NEW: Mini Popup - Master Good Delete Confirmation -->
+    <!-- Mini Popup - Master Good Delete Confirmation -->
     <div class="mini-modal-overlay" id="miniModalDeleteConfirm">
         <div class="mini-modal-content">
             <div style="text-align: center;">
@@ -403,7 +451,7 @@
         </div>
     </div>
 
-    <!-- NEW: Mini Popup - Edit Quantity Confirmation -->
+    <!-- Mini Popup - Edit Quantity Confirmation -->
     <div class="mini-modal-overlay" id="miniModalEditQty">
         <div class="mini-modal-content">
             <div style="text-align: center;">
@@ -425,7 +473,7 @@
         </div>
     </div>
 
-    <!-- NEW: Mini Popup - Purchase Delete Confirmation -->
+    <!-- Mini Popup - Purchase Delete Confirmation -->
     <div class="mini-modal-overlay" id="miniModalDeletePurchase">
         <div class="mini-modal-content">
             <div style="text-align: center;">
@@ -506,7 +554,7 @@
             if (e.state && e.state.modal) document.getElementById(e.state.modal).classList.add('active');
         });
 
-        // NEW: Mini Modal Handlers
+        // Mini Modal Handlers
         window.openMiniModal = function(id) {
             vibrateApp(20);
             document.getElementById(id).classList.add('active');
@@ -538,7 +586,29 @@
         let currentSearch = '';
         let purchaseCache = [];
         let itemsCounter = 0;
+        let filterDate = '';
         
+        // Date Filter Execution Logic
+        window.applyDateFilter = function(val) {
+            filterDate = val;
+            const input = document.getElementById('masterDateFilter');
+            const clearBtn = document.getElementById('clearDateBtn');
+            if (val) {
+                input.classList.add('active-filter');
+                clearBtn.classList.add('active');
+            } else {
+                input.classList.remove('active-filter');
+                clearBtn.classList.remove('active');
+            }
+            loadPurchases(false);
+        };
+
+        window.clearDateFilter = function() {
+            const input = document.getElementById('masterDateFilter');
+            input.value = '';
+            applyDateFilter('');
+        };
+
         // Master List Array
         let masterRawGoods = [];
 
@@ -606,7 +676,6 @@
             `).join('');
         }
         
-        // NEW: Open Edit Quantity Mini Modal
         window.openEditQtyModal = function(id, name, currentStock) {
             document.getElementById('editGoodId').value = id;
             document.getElementById('editGoodName').innerText = name;
@@ -614,7 +683,6 @@
             openMiniModal('miniModalEditQty');
         };
 
-        // NEW: Execute Quantity Update via transaction
         window.executeEditQty = async function() {
             vibrateApp(30);
             const id = document.getElementById('editGoodId').value;
@@ -949,7 +1017,7 @@
             }
         });
 
-        // NEW: Server-Side Transaction logic to Delete an Entire Purchase & Revert Stock
+        // Server-Side Transaction logic to Delete an Entire Purchase & Revert Stock
         window.executeDeletePurchase = async function() {
             vibrateApp(30);
             const id = document.getElementById('editPurchaseId').value;
@@ -1039,14 +1107,24 @@
             try {
                 let q;
                 const dbRef = collection(db, "purchases");
+                q = dbRef;
                 
+                // 1. Apply Date Filter (Equality)
+                if (filterDate !== '') {
+                    q = query(q, where("date", "==", filterDate));
+                }
+                
+                // 2. Apply Search Filters (Equality)
                 if (currentSearch !== '') {
                     const searchWords = currentSearch.replace(/[.\/\\~*\[\]]/g, ' ').split(/[\s\-_]+/).filter(w => w.trim().length > 0);
-                    q = dbRef;
                     searchWords.forEach(word => {
                         q = query(q, where(`searchTokens.${word}`, "==", true));
                     });
-                    
+                }
+                
+                // 3. Apply Pagination and Ordering
+                // Note: If any equality filter is applied (date or search), omitting 'orderBy' prevents composite index errors.
+                if (filterDate !== '' || currentSearch !== '') {
                     if (isLoadMore && lastVisibleDoc) {
                         q = query(q, startAfter(lastVisibleDoc), limit(10));
                     } else {
@@ -1054,9 +1132,9 @@
                     }
                 } else {
                     if (isLoadMore && lastVisibleDoc) {
-                        q = query(dbRef, orderBy("createdAt", "desc"), startAfter(lastVisibleDoc), limit(10));
+                        q = query(q, orderBy("createdAt", "desc"), startAfter(lastVisibleDoc), limit(10));
                     } else {
-                        q = query(dbRef, orderBy("createdAt", "desc"), limit(10));
+                        q = query(q, orderBy("createdAt", "desc"), limit(10));
                     }
                 }
 
