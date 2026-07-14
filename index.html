@@ -231,39 +231,48 @@
             100% { background-position: -200% 0; }
         }
 
-        /* Install Banner */
+        /* Fixed Install Banner */
         #install-banner {
             position: fixed;
-            bottom: 85px; 
+            bottom: 90px; /* Safely clears the 65px mobile nav */
             left: 50%;
-            transform: translateX(-50%) translateY(150%);
+            transform: translate(-50%, 150%); /* Start hidden below screen */
             width: 90%;
-            max-width: 400px;
+            max-width: 360px;
             background-color: var(--bg-surface);
             border: 1px solid var(--border-color);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); /* Stronger shadow for depth */
             border-radius: 12px;
             padding: 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            z-index: 100;
+            z-index: 9999; /* Absolute top layer */
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        #install-banner.show { transform: translateX(-50%) translateY(0); }
+        #install-banner.show { transform: translate(-50%, 0); }
         .install-info { display: flex; flex-direction: column; gap: 4px; }
-        .install-info strong { font-size: 0.95rem; }
+        .install-info strong { font-size: 0.95rem; color: var(--text-main); }
         .install-info span { font-size: 0.8rem; color: var(--text-muted); }
-        .install-actions { display: flex; gap: 10px; }
-        .btn-install { background-color: var(--primary-color); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; }
-        .btn-close { background: none; border: none; color: var(--text-muted); padding: 8px; font-size: 1.2rem; cursor: pointer; }
+        .install-actions { display: flex; gap: 10px; align-items: center; }
+        .btn-install { background-color: var(--primary-color); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; box-shadow: var(--shadow-sm); }
+        .btn-close { background: none; border: none; color: var(--text-muted); padding: 8px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
         @media (min-width: 768px) {
             nav.bottom-nav { display: none; }
             nav.sidebar { display: flex; }
-            #install-banner { bottom: 20px; left: auto; right: 20px; transform: translateX(120%); }
-            #install-banner.show { transform: translateX(0); }
+            
+            /* Fixed PC Install Banner */
+            #install-banner { 
+                bottom: 24px; 
+                left: auto; 
+                right: 24px; 
+                transform: translate(150%, 0); /* Hide off to the right instead of bottom */
+            }
+            #install-banner.show { 
+                transform: translate(0, 0); 
+            }
         }
     </style>
 </head>
@@ -271,8 +280,8 @@
 
     <script>
         const savedPic = localStorage.getItem('lithik_profile_pic');
-        if(savedPic) {
-            // Apply a small delay so the DOM has a chance to parse the header element
+        // Strict check to ensure 'null' or 'undefined' string values don't break the image
+        if(savedPic && savedPic !== 'null' && savedPic !== 'undefined') {
             document.addEventListener("DOMContentLoaded", () => {
                 document.getElementById('header-profile-pic').src = savedPic;
             });
@@ -285,7 +294,7 @@
                 <img src="images/icon.jpg" alt="Logo" class="company-logo" onerror="this.src='https://via.placeholder.com/40'">
                 <h1>LITHIK BEVERAGE</h1>
             </div>
-            <img id="header-profile-pic" src="https://via.placeholder.com/40" alt="Profile" class="profile-pic" onclick="window.location.href='admin.html'">
+            <img id="header-profile-pic" src="https://via.placeholder.com/40" alt="Profile" class="profile-pic" onerror="this.src='https://via.placeholder.com/40'" onclick="window.location.href='admin.html'">
         </header>
 
         <div class="layout-container">
