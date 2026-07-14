@@ -2,7 +2,7 @@
   "name": "LITHIK BEVERAGE",
   "short_name": "LITHIK",
   "description": "Factory Operations and Inventory Management System",
-  "start_url": ".",
+  "start_url": "index.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#020617",
