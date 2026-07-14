@@ -5,8 +5,12 @@
   "start_url": ".",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#f8fafc",
+  "background_color": "#020617",
   "theme_color": "#1e40af",
+  "categories": [
+    "productivity",
+    "business"
+  ],
   "icons": [
     {
       "src": "images/icon.png",
@@ -19,6 +23,20 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Billing",
+      "short_name": "Billing",
+      "url": "bill.html",
+      "icons": [{ "src": "images/icon.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Production",
+      "short_name": "Production",
+      "url": "production.html",
+      "icons": [{ "src": "images/icon.png", "sizes": "192x192" }]
     }
   ]
 }
