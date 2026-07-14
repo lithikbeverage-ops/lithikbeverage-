@@ -113,9 +113,15 @@
             align-items: center; 
             justify-content: center;
             transition: all 0.2s;
+            position: relative;
+            z-index: 10;
         }
         .clear-date-btn.active {
             display: flex;
+        }
+
+        .mobile-filter-icon {
+            display: none;
         }
 
         .layout-container { display: flex; flex: 1; overflow: hidden; min-height: 0; }
@@ -240,6 +246,36 @@
             .item-row > :nth-child(3) { grid-column: 2; }
             .item-row > :nth-child(4) { display: none; } /* Hide line total text on mobile to save space */
             .btn-remove-row { position: absolute; right: 16px; margin-top: 4px; width: 28px; height: 28px; }
+
+            /* Mobile Filter Icon Styling */
+            .header-date-picker {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 38px;
+                height: 38px;
+                opacity: 0;
+                z-index: 5;
+                padding: 0;
+                margin: 0;
+            }
+            .mobile-filter-icon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 38px;
+                height: 38px;
+                border-radius: 10px;
+                border: 1px solid var(--border-color);
+                background: var(--input-bg);
+                color: var(--text-main);
+                transition: all 0.2s;
+            }
+            .mobile-filter-icon.active-filter {
+                background: rgba(30, 64, 175, 0.05);
+                color: var(--primary-color);
+                border-color: var(--primary-color);
+            }
         }
     </style>
 </head>
@@ -255,7 +291,10 @@
                 <h1>PURCHASE</h1>
             </div>
             <div class="header-right">
-                <div style="display: flex; align-items: center; gap: 6px;">
+                <div class="date-filter-container" style="display: flex; align-items: center; gap: 6px; position: relative;">
+                    <div class="mobile-filter-icon" id="mobileFilterIcon">
+                        <span class="material-symbols-outlined" style="font-size: 22px;">filter_alt</span>
+                    </div>
                     <input type="date" id="masterDateFilter" class="header-date-picker" title="Filter by Date" onchange="vibrateApp(10); applyDateFilter(this.value)">
                     <button id="clearDateBtn" class="clear-date-btn" onclick="vibrateApp(10); clearDateFilter()" title="Clear Filter">
                         <span class="material-symbols-outlined" style="font-size: 20px;">close</span>
@@ -593,11 +632,15 @@
             filterDate = val;
             const input = document.getElementById('masterDateFilter');
             const clearBtn = document.getElementById('clearDateBtn');
+            const mobileIcon = document.getElementById('mobileFilterIcon');
+            
             if (val) {
                 input.classList.add('active-filter');
+                if(mobileIcon) mobileIcon.classList.add('active-filter');
                 clearBtn.classList.add('active');
             } else {
                 input.classList.remove('active-filter');
+                if(mobileIcon) mobileIcon.classList.remove('active-filter');
                 clearBtn.classList.remove('active');
             }
             loadPurchases(false);
