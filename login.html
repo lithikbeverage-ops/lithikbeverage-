@@ -10,24 +10,22 @@
     <style>
         /* CSS Variables for Auto Dark/Light Mode */
         :root {
-            --bg-color: #f4f7f6;
+            --bg-color: #f8fafc;
             --surface-color: #ffffff;
-            --text-main: #1e293b;
+            --text-main: #0f172a;
             --text-muted: #64748b;
             --primary-color: #0056b3;
             --border-color: #e2e8f0;
-            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
 
         @media (prefers-color-scheme: dark) {
             :root {
-                --bg-color: #0f172a;
-                --surface-color: #1e293b;
+                --bg-color: #020617;
+                --surface-color: #0f172a;
                 --text-main: #f8fafc;
                 --text-muted: #94a3b8;
                 --primary-color: #38bdf8;
-                --border-color: #334155;
-                --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+                --border-color: #1e293b;
             }
         }
 
@@ -47,44 +45,80 @@
             margin: 0;
             height: 100vh;
             width: 100vw;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             overflow: hidden; /* Prevents sidebars/scrollbars */
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        .login-card {
-            background-color: var(--surface-color);
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow);
-            padding: 40px 30px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-            transition: background-color 0.3s ease;
+        /* Full Screen Split Layout */
+        .container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
         }
 
+        .left-panel {
+            flex: 1;
+            background-color: var(--surface-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            background-color: var(--bg-color);
+        }
+
+        /* Branding Elements */
         .company-logo {
-            width: 80px;
-            height: 80px;
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
             object-fit: cover;
-            margin-bottom: 15px;
+            margin-bottom: 24px;
             pointer-events: none; /* Prevents dragging the image */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
             font-weight: 800;
-            font-size: 1.5rem;
-            margin: 0 0 5px 0;
-            letter-spacing: 0.5px;
+            font-size: 2rem;
+            margin: 0 0 10px 0;
+            letter-spacing: 1px;
+            color: var(--primary-color);
         }
 
-        p {
+        .tagline {
             color: var(--text-muted);
-            font-size: 0.9rem;
+            font-size: 1.1rem;
+            max-width: 300px;
+            margin: 0;
+        }
+
+        /* Auth Container to keep right side tidy */
+        .auth-content {
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+        }
+
+        .auth-content h2 {
+            font-size: 1.8rem;
+            margin: 0 0 8px 0;
+        }
+
+        .auth-content p {
+            color: var(--text-muted);
             margin-bottom: 30px;
         }
 
@@ -94,7 +128,7 @@
             background-color: var(--primary-color);
             color: #ffffff;
             border: none;
-            padding: 14px;
+            padding: 16px;
             border-radius: 8px;
             font-size: 1rem;
             font-weight: 600;
@@ -102,8 +136,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            transition: opacity 0.2s;
+            gap: 12px;
+            transition: opacity 0.2s, transform 0.1s;
         }
 
         button:active {
@@ -113,21 +147,22 @@
 
         input {
             width: 100%;
-            background-color: var(--bg-color);
+            background-color: var(--surface-color);
             color: var(--text-main);
-            border: 1px solid var(--border-color);
-            padding: 14px;
+            border: 2px solid var(--border-color);
+            padding: 16px;
             border-radius: 8px;
             font-size: 1rem;
             font-family: 'Inter', sans-serif;
             margin-bottom: 20px;
             -webkit-user-select: auto; /* Allow selecting text inside input only */
             user-select: auto;
+            transition: border-color 0.2s;
         }
 
         input:focus {
-            outline: 2px solid var(--primary-color);
-            border-color: transparent;
+            outline: none;
+            border-color: var(--primary-color);
         }
 
         /* New User Setup Section (Hidden by default) */
@@ -143,37 +178,70 @@
             margin-bottom: 20px;
             object-fit: cover;
         }
+
+        /* PC / Desktop Layout Adjustments */
+        @media (min-width: 768px) {
+            .container {
+                flex-direction: row;
+            }
+
+            .left-panel {
+                border-bottom: none;
+                border-right: 1px solid var(--border-color);
+                padding: 60px;
+            }
+
+            .right-panel {
+                padding: 60px;
+            }
+
+            .company-logo {
+                width: 160px;
+                height: 160px;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <div class="login-card">
-        
-        <div id="login-section">
-            <img src="images/icon.jpg" alt="Company Logo" class="company-logo" onerror="this.src='https://via.placeholder.com/80?text=Logo'">
+    <div class="container">
+        <div class="left-panel">
+            <img src="images/icon.jpg" alt="Company Logo" class="company-logo" onerror="this.src='https://via.placeholder.com/160?text=Logo'">
             <h1>LITHIK BEVERAGE</h1>
-            <p>Operations & Billing Portal</p>
-            
-            <button id="google-login-btn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                </svg>
-                Sign in with Google
-            </button>
+            <p class="tagline">Factory Operations & Inventory Management</p>
         </div>
 
-        <div id="setup-section">
-            <img id="user-profile-pic" src="" alt="User Profile" class="profile-pic">
-            <h2>Welcome!</h2>
-            <p>Please confirm your name.</p>
+        <div class="right-panel">
             
-            <input type="text" id="user-name-input" placeholder="Your Full Name">
-            <button id="save-user-btn">Save & Enter Dashboard</button>
-        </div>
+            <div id="login-section" class="auth-content">
+                <h2>Welcome Back</h2>
+                <p>Sign in to access your dashboard</p>
+                
+                <button id="google-login-btn">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    </svg>
+                    Continue with Google
+                </button>
+            </div>
 
+            <div id="setup-section" class="auth-content">
+                <img id="user-profile-pic" src="" alt="User Profile" class="profile-pic">
+                <h2>Account Setup</h2>
+                <p>Please confirm your full name.</p>
+                
+                <input type="text" id="user-name-input" placeholder="Your Full Name">
+                <button id="save-user-btn">Save & Enter Dashboard</button>
+            </div>
+
+        </div>
     </div>
 
     <script type="module">
@@ -192,31 +260,25 @@
         const profilePicImg = document.getElementById('user-profile-pic');
         const nameInput = document.getElementById('user-name-input');
 
-        // Temporary storage for user data between steps
         let pendingUserData = null;
 
         // Step 1: Handle Google Login
         loginBtn.addEventListener('click', async () => {
             try {
-                // Open Google Login popup
                 const result = await signInWithPopup(auth, provider);
                 const user = result.user;
 
-                // Check if user exists in Firestore
                 const userDocRef = doc(db, "users", user.uid);
                 const userDocSnap = await getDoc(userDocRef);
 
                 if (userDocSnap.exists()) {
-                    // User exists! Redirect immediately
                     window.location.href = 'index.html';
                 } else {
-                    // New User! Switch UI to setup section
                     pendingUserData = user;
                     
                     loginSection.style.display = 'none';
                     setupSection.style.display = 'block';
                     
-                    // Populate picture and input field
                     profilePicImg.src = user.photoURL || 'https://via.placeholder.com/90';
                     nameInput.value = user.displayName || '';
                 }
@@ -226,7 +288,7 @@
             }
         });
 
-        // Step 2: Save New User to Firestore
+        // Step 2: Save New User
         saveBtn.addEventListener('click', async () => {
             const finalName = nameInput.value.trim();
             
@@ -236,21 +298,18 @@
             }
 
             try {
-                // Disable button to prevent double-clicks
                 saveBtn.disabled = true;
-                saveBtn.innerText = "Saving...";
+                saveBtn.innerText = "Setting up account...";
 
-                // Create the user document in Firestore
                 await setDoc(doc(db, "users", pendingUserData.uid), {
                     uid: pendingUserData.uid,
                     name: finalName,
                     email: pendingUserData.email,
                     photoURL: pendingUserData.photoURL,
-                    role: "pending", // Default role, admin will upgrade them later
+                    role: "pending", 
                     createdAt: new Date().toISOString()
                 });
 
-                // Redirect on success
                 window.location.href = 'index.html';
 
             } catch (error) {
