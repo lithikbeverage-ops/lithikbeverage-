@@ -59,7 +59,6 @@
         .material-symbols-outlined { display: inline-flex; align-items: center; justify-content: center; }
 
         /* Layout Structure */
-        /* PROFESSIONAL FIX: Added background-color and z-index: 1 to properly obscure the PDF render layer */
         #app-shell { display: flex; height: 100%; width: 100%; position: absolute; inset: 0; flex-direction: column; overflow: hidden; background-color: var(--bg-body); z-index: 1; }
         
         header { display: flex; align-items: center; justify-content: space-between; background-color: var(--bg-surface); padding: 12px 20px; border-bottom: 1px solid var(--border-color); z-index: 10; flex-shrink: 0; }
@@ -144,23 +143,17 @@
         }
 
         /* ---------------------------------------------------- */
-        /* --- PDF EXPORT CONTAINERS (HIDDEN BUT RENDERABLE) -- */
+        /* --- ROBUST PDF EXPORT CONTAINERS --- */
         /* ---------------------------------------------------- */
         
-        /* PROFESSIONAL FIX: Kept at (0,0) for correct rendering coordinates, but layered safely behind UI using z-index */
         .pdf-export-container {
-            position: absolute;
-            left: 0;
-            top: 0;
+            display: none; /* Hidden strictly until generation is triggered */
             width: 210mm; /* Strict A4 Width */
-            min-height: 297mm; /* Ensure it computes full A4 size preventing cutoff */
             background: white;
             color: #000;
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             box-sizing: border-box;
-            z-index: -9999; /* This safely hides it directly behind #app-shell */
             padding-bottom: 40px;
-            pointer-events: none;
         }
 
         /* SINGLE BILL EXACT LAYOUT inside PDF Container */
@@ -180,15 +173,19 @@
         .invoice-date-box { text-align: right; display: flex; flex-direction: column; align-items: flex-end; margin-top: 5px;}
         .invoice-date-box span { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px;}
         .invoice-date-box strong { font-size: 14px; font-weight: 800; color: #0f172a; margin-top: 4px;}
+        
         .print-table-container { padding: 0 40px; display: block; width: 100%; box-sizing: border-box; }
         .print-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; } 
         .print-table th { background-color: #f1f5f9; padding: 12px 10px; font-size: 11px; text-transform: uppercase; text-align: left; color: #0f172a; font-weight: 800; border-top: 2px solid #cbd5e1; border-bottom: 2px solid #cbd5e1; }
         .print-table td { border-bottom: 1px solid #e2e8f0; padding: 12px 10px; font-size: 12px; vertical-align: middle; color: #0f172a;}
         .print-table th.text-right, .print-table td.text-right { text-align: right; padding-right: 15px; }
         .print-table th.text-center, .print-table td.text-center { text-align: center; }
-        .print-table tbody tr.page-break { page-break-after: always; break-after: page; }
         
-        .print-middle-section { display: flex; justify-content: space-between; padding: 15px 40px; margin-top: 30px; width: 100%; box-sizing: border-box; background-color: #fff; page-break-inside: avoid; }
+        /* Multi-page split fix logic based on sales.html */
+        .page-break { page-break-after: always; break-after: page; }
+        .print-table tbody tr { page-break-inside: avoid; break-inside: avoid; height: 25mm !important; max-height: 25mm !important; overflow: hidden; }
+        
+        .print-middle-section { display: flex; justify-content: space-between; padding: 15px 40px; margin-top: 30px; width: 100%; box-sizing: border-box; background-color: #fff; page-break-inside: avoid; break-inside: avoid; }
         .print-left-footer-info { width: 45%; }
         .thanks-box { background-color: #f8fafc; padding: 15px; margin-bottom: 15px; border-left: 4px solid #1e40af; border-radius: 4px;} 
         .thanks-box strong { display: block; font-size: 13px; margin-bottom: 5px; color: #0f172a;}
@@ -204,15 +201,15 @@
         .totals-grid .t-grand-row { background-color: #f1f5f9; border-top: 2px solid #cbd5e1; border-bottom: 2px solid #cbd5e1;}
         .totals-grid .t-grand-row td { font-size: 16px; font-weight: 900; color: #1e40af; padding: 10px 15px 10px 10px; } 
         
-        .print-signature-area { display: flex; justify-content: space-between; padding: 0 40px; margin-top: 60px; width: 100%; box-sizing: border-box; background-color: #fff; page-break-inside: avoid; }
+        .print-signature-area { display: flex; justify-content: space-between; padding: 0 40px; margin-top: 60px; width: 100%; box-sizing: border-box; background-color: #fff; page-break-inside: avoid; break-inside: avoid; }
         .sign-box { text-align: center; width: 220px; }
         .sign-box div.sign-placeholder { border-bottom: 1px solid #000; height: 35px; margin-bottom: 8px; width: 100%; }
         .sign-box p { margin: 0; font-size: 11px; font-weight: bold; color: #000;}
         
-        .print-absolute-footer { background-color: #f1f5f9; padding: 12px 40px; display: flex; justify-content: center; align-items: center; margin-top: 40px; width: 100%; box-sizing: border-box; border-top: 1px solid #e2e8f0; page-break-inside: avoid; }
+        .print-absolute-footer { background-color: #f1f5f9; padding: 12px 40px; display: flex; justify-content: center; align-items: center; margin-top: 40px; width: 100%; box-sizing: border-box; border-top: 1px solid #e2e8f0; page-break-inside: avoid; break-inside: avoid; }
         .print-absolute-footer p { margin: 0; font-size: 9px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px;}
 
-        /* TABULAR REPORT EXACT LAYOUT (Auditor Ready) inside PDF Container */
+        /* TABULAR REPORT EXACT LAYOUT (Auditor Ready) */
         .rpt-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; padding-top: 20px;}
         .rpt-header h2 { margin: 0; font-size: 22px; font-weight: bold; text-transform: uppercase;}
         .rpt-header p { margin: 5px 0 0 0; font-size: 12px; color: #333;}
@@ -220,8 +217,7 @@
         .rpt-table th, .rpt-table td { border: 1px solid #999; padding: 8px; text-align: left; }
         .rpt-table th { background-color: #f1f5f9; font-weight: bold; }
         .rpt-table td.num { text-align: right; }
-        .rpt-table tr.total-row { font-weight: bold; background-color: #e2e8f0; }
-        .rpt-table tr.page-break { page-break-after: always; break-after: page; }
+        .rpt-table tr.total-row { font-weight: bold; background-color: #e2e8f0; page-break-inside: avoid; }
 
     </style>
 </head>
@@ -304,7 +300,6 @@
                             </div>
                         </div>
 
-                        <!-- Graphical Charts Added Here -->
                         <div class="fin-card" style="grid-column: 1 / -1; display: flex; flex-direction: column; gap: 20px;">
                             <div class="fin-header">
                                 <span>Visual Analytics</span>
@@ -696,35 +691,45 @@
             updateCharts(dThis, dLast);
         }
 
-        // --- PROFESSIONAL PDF ENGINE ---
+        // --- BULLETPROOF PDF EXPORT ENGINE ---
         function executePdfDownload(elementId, filename) {
             return new Promise((resolve) => {
                 const element = document.getElementById(elementId);
+                const appShell = document.getElementById('app-shell');
+                const modals = document.querySelectorAll('.modal.active, .mini-modal-overlay.active');
                 
-                // Professional Fix: NO UI flashing, NO blank pages.
-                // Because we styled .pdf-export-container at top:0, left:0, and z-index:-9999, 
-                // html2canvas accurately maps the coordinates without needing to hide/show the UI.
-                
+                // CRITICAL FIX: Temporarily completely hide all app UI elements and force the print 
+                // container into the literal DOM flow so html2canvas renders it 100% perfectly.
+                appShell.style.display = 'none';
+                modals.forEach(m => m.style.display = 'none');
+                element.style.display = 'block';
+
                 const opt = {
-                    margin:       0.2, 
+                    margin:       [0.1, 0, 0, 0], // Tiny top margin, CSS handles the rest
                     filename:     `${filename}.pdf`,
                     image:        { type: 'jpeg', quality: 1 },
                     html2canvas:  { 
                         scale: 2, 
                         useCORS: true, 
                         letterRendering: true,
-                        scrollY: 0, // Strictly forces capture at Top-0 
-                        scrollX: 0, // Strictly forces capture at Left-0
-                        backgroundColor: '#ffffff' // Ensures no transparent/blank backgrounds bleed through
+                        scrollY: 0, 
+                        windowWidth: 794 // Roughly 210mm in pixels to force A4 rendering logic
                     },
                     jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
                     pagebreak:    { mode: ['css', 'legacy'] }
                 };
                 
                 html2pdf().set(opt).from(element).save().then(() => {
+                    // Instantly restore layout
+                    appShell.style.display = 'flex';
+                    modals.forEach(m => m.style.display = 'flex'); // Re-enable active modals
+                    element.style.display = 'none';
                     resolve(true);
                 }).catch(err => {
                     console.error("PDF Export Error:", err);
+                    appShell.style.display = 'flex';
+                    modals.forEach(m => m.style.display = 'flex');
+                    element.style.display = 'none';
                     resolve(false);
                 });
             });
@@ -820,7 +825,6 @@
             
             try {
                 let dataArray = [];
-                // Unifying the Professional Breakdown Standard for both Sales & Purchases
                 const headers = ["Doc No", "Date", "Party Name", "Taxable Base", "CGST", "SGST", "Grand Total"];
                 let title = "";
 
@@ -848,8 +852,6 @@
                     
                     snap.forEach(doc => {
                         const d = doc.data();
-                        
-                        // Strict Purchase GST reverse-calculation
                         let gTotal = d.grandTotal || 0;
                         let gstRate = parseFloat(d.gstPercentage) || 0;
                         let baseTotal = gTotal / (1 + (gstRate / 100));
@@ -904,7 +906,7 @@
                     let gBase = 0, gCGST = 0, gSGST = 0, gTotal = 0;
 
                     dataArray.forEach((row, rowIndex) => {
-                        // Multi-page Natural PDF breaks for lists exceeding ~25 elements
+                        // Multi-page Natural PDF breaks for lists exceeding 25 elements
                         let breakClass = (rowIndex > 0 && rowIndex % 25 === 0) ? 'class="page-break"' : '';
                         tbody += `<tr ${breakClass}>`;
                         row.forEach((col, i) => {
