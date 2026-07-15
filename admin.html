@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 
     <style>
-        /* CSS Variables for Auto Dark/Light Mode */
+        /* CSS Variables for Auto Dark/Light Mode[span_1](start_span)[span_1](end_span) */
         :root {
             --bg-color: #f8fafc;
             --surface-color: #ffffff;
@@ -35,7 +35,7 @@
             }
         }
 
-        /* Strict Layout Rules: No copy */
+        /* Strict Layout Rules: No copy[span_2](start_span)[span_2](end_span) */
         * {
             box-sizing: border-box;
             -webkit-user-select: none; 
@@ -45,7 +45,7 @@
             -webkit-tap-highlight-color: transparent; 
         }
 
-        /* Aggressively Hide All Scrollbars Everywhere */
+        /* Aggressively Hide All Scrollbars Everywhere[span_3](start_span)[span_3](end_span) */
         html, body, * {
             -ms-overflow-style: none !important;  
             scrollbar-width: none !important;  
@@ -233,7 +233,7 @@
             border-color: var(--primary-color);
         }
 
-        /* Buttons & Inputs */
+        /* Buttons & Inputs[span_4](start_span)[span_4](end_span) */
         button {
             width: 100%;
             background-color: var(--primary-color);
@@ -301,8 +301,7 @@
             top: 0;
             left: 0;
             width: 100vw;
-            height: 100%; /* Changed from 100vh for mobile compatibility */
-            bottom: 0; /* Ensures full anchoring */
+            height: 100vh;
             background-color: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(4px);
             z-index: 1000;
@@ -327,12 +326,8 @@
             padding: 24px;
             transform: translateY(100%);
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            
-            /* UPDATED FOR STRICT FIX: Pin actions to bottom */
-            max-height: 85vh; 
-            display: flex; 
-            flex-direction: column; 
-            overflow: hidden !important; /* Overrides original auto */
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .modal-overlay.active .modal-content {
@@ -341,7 +336,6 @@
 
         .modal-header {
             margin-bottom: 24px;
-            flex-shrink: 0; /* Ensures header never collapses */
         }
 
         .modal-header h2 {
@@ -436,13 +430,6 @@
             display: flex;
             justify-content: space-between;
             gap: 16px;
-            
-            /* UPDATED: Pin to bottom */
-            flex-shrink: 0;
-            padding-top: 16px;
-            margin-top: auto;
-            border-top: 1px solid var(--border-color);
-            background: var(--surface-color);
         }
 
         .delete-btn {
@@ -461,7 +448,7 @@
             flex: 2;
         }
 
-        /* Loading Spinner CSS */
+        /* Loading Spinner CSS[span_5](start_span)[span_5](end_span) */
         .spinner {
             border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
@@ -491,7 +478,7 @@
             height: 40px;
         }
 
-        /* PC / Desktop Layout Adjustments */
+        /* PC / Desktop Layout Adjustments[span_6](start_span)[span_6](end_span) */
         @media (min-width: 768px) {
             .header-title {
                 display: block;
@@ -511,37 +498,57 @@
                 transform: scale(1);
             }
         }
-
-        /* ----- NEW CSS FOR SKELETON LOADERS AND INFINITE SCROLL ENFORCEMENT ----- */
-        .skeleton-box {
-            position: relative;
-            overflow: hidden;
-            background-color: var(--border-color) !important;
-            color: transparent !important;
-            border-color: transparent !important;
-            pointer-events: none;
-        }
-        .skeleton-box::after {
-            position: absolute;
-            top: 0; right: 0; bottom: 0; left: 0;
-            transform: translateX(-100%);
-            background-image: linear-gradient(
-                90deg,
-                rgba(255, 255, 255, 0) 0,
-                rgba(255, 255, 255, 0.2) 20%,
-                rgba(255, 255, 255, 0.5) 60%,
-                rgba(255, 255, 255, 0)
-            );
-            animation: shimmer 1.5s infinite;
-            content: '';
-        }
-        @keyframes shimmer { 100% { transform: translateX(100%); } }
-        .skel-text { border-radius: 4px; display: inline-block; }
-        .skel-text-short { border-radius: 4px; display: inline-block; }
-        .skel-badge { width: 50px; height: 18px; border-radius: 4px; }
         
-        /* Forcefully hide the old manual pagination buttons, we're using infinite scroll */
-        #pagination-controls { display: none !important; }
+        /* ================= NEW ADDITIONS FOR FIXES & SKELETONS ================= */
+        
+        /* Skeleton Loading CSS */
+        @keyframes skeleton-loading {
+            0% { background-color: var(--border-color); }
+            100% { background-color: var(--bg-color); }
+        }
+        .skeleton {
+            animation: skeleton-loading 1s linear infinite alternate;
+            border-radius: 4px;
+        }
+        .skeleton-img {
+            width: 50px; 
+            height: 50px; 
+            border-radius: 50%;
+        }
+        .skeleton-text {
+            height: 12px;
+            margin-bottom: 8px;
+            width: 80%;
+        }
+        .skeleton-text.short { 
+            width: 50%; 
+        }
+
+        /* Edit Modal Button Scrolling Fix */
+        .modal-content {
+            display: flex;
+            flex-direction: column;
+            padding: 24px 24px 0 24px; /* Shift bottom padding to actions */
+        }
+        
+        .modal-header, .toggle-container, input {
+            flex-shrink: 0;
+        }
+
+        .modal-actions {
+            position: sticky;
+            bottom: 0;
+            background-color: var(--surface-color);
+            padding: 16px 0 24px 0;
+            margin-top: 10px;
+            border-top: 1px solid var(--border-color);
+            z-index: 10;
+        }
+
+        /* Hide Old Pagination Buttons since Infinite Scroll is active */
+        #pagination-controls {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
@@ -554,12 +561,11 @@
         </div>
         <div class="user-profile-badge" id="current-user-badge">
             <div class="user-profile-details">
-                <!-- Added skeleton-box classes initially -->
-                <span class="user-profile-name skeleton-box skel-text" id="current-user-name" style="min-width: 90px; height: 14px;">Loading...</span>
-                <span class="user-profile-role skeleton-box skel-text-short" id="current-user-role" style="min-width: 60px; height: 11px;">...</span>
+                <span class="user-profile-name" id="current-user-name"><div class="skeleton skeleton-text short" style="margin:0;"></div></span>
+                <span class="user-profile-role" id="current-user-role">...</span>
             </div>
-            <!-- Added onerror fallback and skeleton class -->
-            <img id="current-user-pic" class="skeleton-box" src="https://via.placeholder.com/90" alt="Profile" onerror="this.onerror=null; this.src='https://via.placeholder.com/90';">
+            <!-- Added onerror to handle broken profile images globally -->
+            <img id="current-user-pic" src="https://via.placeholder.com/90" alt="Profile" onerror="this.onerror=null; this.src='https://via.placeholder.com/90'">
         </div>
     </header>
 
@@ -567,19 +573,16 @@
     <main class="main-content">
         <h2 class="section-header">User Management</h2>
         
-        <div id="loader" class="loader-container" style="display: none;">
+        <div id="loader" class="loader-container" style="display:none;">
             <div class="spinner"></div>
         </div>
 
         <div id="users-grid" class="users-grid">
             <!-- User cards will be injected here -->
         </div>
-
-        <!-- NEW: Scroll Sentinel for Infinite Scrolling Loading -->
-        <div id="scroll-sentinel" style="height: 20px; width: 100%; margin-top: 20px;"></div>
-        <div id="scroll-loader" class="loader-container" style="display: none; padding: 10px;">
-            <div class="spinner"></div>
-        </div>
+        
+        <!-- Sentinel for Infinite Scrolling -->
+        <div id="scroll-sentinel" style="height: 20px; width: 100%;"></div>
 
         <div class="pagination" id="pagination-controls" style="display: none;">
             <button id="prev-btn" class="edit-btn" disabled>Previous</button>
@@ -595,18 +598,15 @@
                 <h2>Edit User</h2>
             </div>
             
-            <!-- NEW: Wrapped inputs in a scrollable body to prevent buttons hiding -->
-            <div class="modal-scrollable-body" style="overflow-y: auto; flex: 1; padding-right: 5px; padding-bottom: 20px;">
-                <input type="hidden" id="edit-uid">
-                <input type="text" id="edit-name" placeholder="Full Name">
-                
-                <div class="toggle-container">
-                    <span class="toggle-label">Administrator Access</span>
-                    <label class="switch">
-                        <input type="checkbox" id="edit-admin-toggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
+            <input type="hidden" id="edit-uid">
+            <input type="text" id="edit-name" placeholder="Full Name">
+            
+            <div class="toggle-container">
+                <span class="toggle-label">Administrator Access</span>
+                <label class="switch">
+                    <input type="checkbox" id="edit-admin-toggle">
+                    <span class="slider"></span>
+                </label>
             </div>
 
             <div class="modal-actions">
@@ -619,7 +619,7 @@
         </div>
     </div>
 
-    <!-- Firebase Scripts -->
+    <!-- Firebase Scripts[span_7](start_span)[span_7](end_span) -->
     <script type="module">
         import { app, db } from './config.js';
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
@@ -651,12 +651,11 @@
         let documentSnapshots = [];
         let pageCursors = [null]; // Stores the first document of each page for prev navigation
         
-        // NEW: Infinite Scroll State Variables
-        let isLoadingData = false;
-        let hasMoreDocs = true;
-        const scrollLoader = document.getElementById('scroll-loader');
-
-        // Haptic Feedback Helper
+        // Infinite Scrolling State variables
+        let isFetching = false;
+        let hasMore = true;
+        
+        // Haptic Feedback Helper[span_8](start_span)[span_8](end_span)
         function hapticVibrate(pattern) {
             if ('vibrate' in navigator) {
                 navigator.vibrate(pattern);
@@ -676,59 +675,43 @@
                     document.getElementById('current-user-name').innerText = userData.name || user.displayName;
                     document.getElementById('current-user-role').innerText = (userData.role === 'admin' || userData.admin === true) ? 'Administrator' : 'User';
                     
-                    // NEW: Remove Skeleton classes from profile header once data loads
-                    document.getElementById('current-user-name').classList.remove('skeleton-box', 'skel-text');
-                    document.getElementById('current-user-role').classList.remove('skeleton-box', 'skel-text-short');
-                    document.getElementById('current-user-pic').classList.remove('skeleton-box');
-
                     // Proceed to load users
-                    loadUsers();
+                    loadUsers('init');
                 }
             } else {
                 window.location.href = 'login.html';
             }
         });
 
-        // NEW: Helper function to generate skeleton cards for the Grid
-        function renderSkeletonCards(count) {
-            let html = '';
-            for(let i=0; i<count; i++) {
-                html += `
-                <div class="user-card">
-                    <div class="user-card-info">
-                        <div class="skeleton-box" style="width: 50px; height: 50px; border-radius: 50%;"></div>
-                        <div class="user-card-text" style="width: 100%;">
-                            <div class="skeleton-box skel-text" style="height: 16px; width: 80%;"></div>
-                            <div class="skeleton-box skel-text-short" style="height: 12px; width: 50%;"></div>
-                            <div class="skeleton-box skel-badge"></div>
-                        </div>
-                    </div>
-                    <div class="skeleton-box skel-text" style="height: 44px; width: 100%; border-radius: 8px; margin: 0;"></div>
-                </div>`;
-            }
-            return html;
-        }
-
-        // Load Users (Firebase Read Optimization)
+        // Load Users (Firebase Read Optimization & Infinite Scroll Integration)
         async function loadUsers(direction = 'init') {
-            // NEW logic to prevent duplicate fetching during infinite scroll
-            if (isLoadingData) return;
-            if (direction === 'next' && !hasMoreDocs) return;
-            isLoadingData = true;
-
-            // ORIGINAL LINES COMMENTED OUT SO WE DON'T DELETE EXISTING DATA ON SCROLL
-            // loader.style.display = 'flex';
-            // usersGrid.style.display = 'none';
-            // usersGrid.innerHTML = '';
+            if (isFetching || (!hasMore && direction === 'next')) return;
+            isFetching = true;
+            
+            // loader.style.display = 'flex'; // Modified logic below preserves intention while adding skeletons
             
             if (direction === 'init') {
+                hasMore = true;
+                // Add Skeleton cards before data loads
+                usersGrid.innerHTML = '';
+                for(let i=0; i<6; i++) {
+                    usersGrid.innerHTML += `
+                    <div class="user-card skeleton-card">
+                        <div class="user-card-info">
+                            <div class="skeleton skeleton-img"></div>
+                            <div class="user-card-text" style="width:100%">
+                                <div class="skeleton skeleton-text"></div>
+                                <div class="skeleton skeleton-text short"></div>
+                            </div>
+                        </div>
+                    </div>`;
+                }
                 usersGrid.style.display = 'grid';
-                usersGrid.innerHTML = renderSkeletonCards(PAGE_LIMIT); // Load Skeleton Animation First
-                hasMoreDocs = true;
+                documentSnapshots = [];
             } else if (direction === 'next') {
-                scrollLoader.style.display = 'flex'; // Show bottom loading spinner
+                loader.style.display = 'flex'; // Show spinner at bottom when scrolling
             }
-            
+
             try {
                 const usersRef = collection(db, "users");
                 let q;
@@ -750,15 +733,11 @@
 
                 const querySnapshot = await getDocs(q);
                 
-                // Keep tracking docs for pagination reference safely
-                if (direction === 'next') {
-                    documentSnapshots = [...documentSnapshots, ...querySnapshot.docs];
-                } else {
+                if (direction === 'init' || direction === 'prev') {
+                    usersGrid.innerHTML = ''; // Clear skeletons or old page
                     documentSnapshots = querySnapshot.docs;
-                }
-
-                if (direction === 'init') {
-                    usersGrid.innerHTML = ''; // Wipe Skeletons right before inserting actual loaded data
+                } else if (direction === 'next') {
+                    documentSnapshots = [...documentSnapshots, ...querySnapshot.docs];
                 }
 
                 if (!querySnapshot.empty) {
@@ -766,47 +745,36 @@
                         renderUserCard(docSnap.data(), docSnap.id);
                     });
 
-                    // Evaluate if there are more docs for infinite scroll
-                    if (querySnapshot.docs.length < PAGE_LIMIT) {
-                        hasMoreDocs = false;
-                    }
-
-                    // Manage Pagination UI (Left original lines exactly as they were, although container is hidden via CSS)
+                    // Manage Pagination UI
                     pageInfo.innerText = `Page ${currentPage}`;
                     prevBtn.disabled = currentPage === 1;
-                    nextBtn.disabled = documentSnapshots.length < PAGE_LIMIT;
+                    nextBtn.disabled = querySnapshot.docs.length < PAGE_LIMIT;
                     
-                    // paginationControls.style.display = 'flex'; // Commented to enforce Infinite scroll requirement
-                } else {
-                    hasMoreDocs = false;
-                    if (direction === 'init') {
-                        usersGrid.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No users found.</p>';
-                        paginationControls.style.display = 'none';
+                    // paginationControls.style.display = 'flex'; // overridden by css !important
+                    
+                    // Logic for infinite scroll ending
+                    if (querySnapshot.docs.length < PAGE_LIMIT) {
+                        hasMore = false;
                     }
+                } else if (direction === 'init') {
+                    usersGrid.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No users found.</p>';
+                    paginationControls.style.display = 'none';
+                    hasMore = false;
+                } else if (direction === 'next') {
+                    hasMore = false;
                 }
 
-                // loader.style.display = 'none'; // Keeping original commented
-                // usersGrid.style.display = 'grid'; // Keeping original commented
-                scrollLoader.style.display = 'none';
+                loader.style.display = 'none';
+                usersGrid.style.display = 'grid';
 
             } catch (error) {
                 console.error("Error fetching users:", error);
-                alert("Failed to load users. Check permissions or indexes.");
-                scrollLoader.style.display = 'none';
-                // loader.style.display = 'none'; // Keeping original commented
+                // alert("Failed to load users. Check permissions or indexes."); // Commented out to suppress the requested error alert
+                loader.style.display = 'none';
             } finally {
-                isLoadingData = false;
+                isFetching = false;
             }
         }
-
-        // NEW: Intersection Observer setup for Infinite Scrolling
-        const scrollSentinel = document.getElementById('scroll-sentinel');
-        const observer = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting && !isLoadingData && hasMoreDocs) {
-                loadUsers('next');
-            }
-        }, { rootMargin: '150px' });
-        observer.observe(scrollSentinel);
 
         prevBtn.addEventListener('click', () => {
             hapticVibrate(50);
@@ -817,6 +785,21 @@
             hapticVibrate(50);
             loadUsers('next');
         });
+        
+        // Infinite Scroll Intersection Observer Implementation
+        const scrollObserver = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
+                loadUsers('next');
+            }
+        }, { rootMargin: '200px' });
+
+        // Bind observer to sentinel
+        setTimeout(() => {
+            const sentinel = document.getElementById('scroll-sentinel');
+            if (sentinel) {
+                scrollObserver.observe(sentinel);
+            }
+        }, 1000);
 
         // Render User Card
         function renderUserCard(userData, docId) {
@@ -825,10 +808,10 @@
             const card = document.createElement('div');
             card.className = 'user-card';
             
-            // Added onerror="this.onerror=null; this.src='https://via.placeholder.com/90';" specifically as requested
             card.innerHTML = `
                 <div class="user-card-info">
-                    <img src="${userData.photoURL || 'https://via.placeholder.com/90'}" class="user-card-img" alt="Profile" onerror="this.onerror=null; this.src='https://via.placeholder.com/90';">
+                    <!-- Added onerror attribute to ensure no broken images in grid cards -->
+                    <img src="${userData.photoURL || 'https://via.placeholder.com/90'}" class="user-card-img" alt="Profile" onerror="this.onerror=null; this.src='https://via.placeholder.com/90'">
                     <div class="user-card-text">
                         <h3 class="user-card-name">${userData.name || 'Unknown User'}</h3>
                         <p class="user-card-email">${userData.email || 'No email'}</p>
