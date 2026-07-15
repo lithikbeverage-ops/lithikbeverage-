@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Meena Marketing - Parties</title>
+    
+    <style>
+        /* YOUTUBE DARK THEME */
+        :root {
+            --yt-bg: #121212;
+            --yt-card: #212121;
+            --yt-border: #333333;
+            --yt-text-primary: #ffffff;
+            --yt-text-secondary: #aaaaaa;
+            --meena-red: #ff3333;
+            --meena-white: #ffffff;
+            --call-blue: #3ea6ff;
+            --accent-color: #3ea6ff; /* Switched accent to blue for contacts/parties */
+            --success-color: #25D366;
+            --danger-color: #ff3333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -ms-overflow-style: none !important;
+            scrollbar-width: none !important;
+        }
+
+        ::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+        }
+
+        body {
+            background-color: var(--yt-bg);
+            color: var(--yt-text-primary);
+            overflow-x: hidden;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+        
+        body.no-scroll { overflow: hidden !important; }
+
+        input, select, textarea {
+            -webkit-user-select: auto !important;
+            -moz-user-select: auto !important;
+            -ms-user-select: auto !important;
+            user-select: auto !important;
+        }
+
+        /* HEADER */
+        header {
+            background-color: var(--yt-card);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+        }
+
+        .header-left { display: flex; align-items: center; }
+
+        .header-back-btn {
+            color: var(--yt-text-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            margin-right: 12px;
+            margin-left: -8px;
+            border-radius: 50%;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+        .header-back-btn:active { background: var(--yt-border); }
+        .header-back-btn svg { fill: currentColor; width: 26px; height: 26px; }
+
+        .brand { font-size: 22px; font-weight: 900; letter-spacing: -0.5px; }
+        .brand .meena { color: var(--accent-color); }
+        .brand .marketing { color: var(--meena-white); }
+
+        .action-icon {
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .action-icon:active { background: var(--yt-border); }
+        .action-icon svg { fill: var(--yt-text-primary); width: 24px; height: 24px; }
+
+        /* MAIN CONTENT & CARDS */
+        main { padding: 20px; max-width: 1200px; margin: 0 auto; padding-bottom: 90px; }
+        
+        .dashboard-stats { margin-bottom: 20px; font-size: 14px; color: var(--yt-text-secondary); display: flex; justify-content: space-between; align-items: center;}
+
+        .customer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .card {
+            background-color: var(--yt-card);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            border: 1px solid var(--yt-border);
+            position: relative;
+        }
+
+        .card-body-clickable { cursor: pointer; display: flex; flex-direction: column; gap: 8px; }
+        .card-body-clickable:active { opacity: 0.7; }
+
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .customer-name { font-size: 17px; font-weight: 600; color: var(--yt-text-primary); }
+        .party-type { font-size: 12px; color: var(--accent-color); margin-top: 4px; font-family: monospace; background: rgba(62, 166, 255, 0.1); padding: 3px 6px; border-radius: 4px; display: inline-block;}
+        
+        .info-row { display: flex; justify-content: space-between; align-items: center; margin-top: 5px; }
+        .party-phone { font-size: 14px; color: var(--yt-text-primary); }
+        .party-address { font-size: 13px; color: var(--yt-text-secondary); display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+
+        .actions { display: flex; gap: 10px; margin-top: auto; z-index: 2; }
+
+        .btn {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            gap: 8px; padding: 10px; border-radius: 20px; text-decoration: none;
+            font-size: 14px; font-weight: 600; cursor: pointer; border: none; outline: none;
+        }
+        .btn:active { opacity: 0.7; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .btn-call { background-color: var(--accent-color); color: #000; width: 100%; }
+        .btn-call svg { fill: #000; width: 18px; height: 18px; }
+
+        /* FLOATING ACTION BUTTON (FAB) */
+        .fab {
+            position: fixed; bottom: 25px; right: 25px; width: 56px; height: 56px;
+            background-color: var(--accent-color); color: #000; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 15px rgba(62, 166, 255, 0.4); cursor: pointer;
+            z-index: 40; transition: transform 0.2s;
+        }
+        .fab:active { transform: scale(0.9); }
+        .fab svg { fill: #000; width: 24px; height: 24px; }
+
+        /* FULL PAGE MODALS */
+        .full-modal {
+            position: fixed; top: 0; left: 100%; width: 100%; height: 100%;
+            background-color: var(--yt-bg); z-index: 100;
+            transition: left 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
+            display: flex; flex-direction: column;
+        }
+        .full-modal.active { left: 0; }
+        
+        #details-modal { z-index: 110; }
+        #edit-modal { z-index: 120; }
+
+        .modal-header {
+            background-color: var(--yt-card); padding: 12px 20px;
+            border-bottom: 1px solid var(--yt-border); display: flex; align-items: center; gap: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+        }
+        
+        .modal-back-btn {
+            background: none; border: none; color: var(--yt-text-primary);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            padding: 6px; margin-left: -8px; border-radius: 50%;
+        }
+        .modal-back-btn:active { background: var(--yt-border); }
+        .modal-back-btn svg { fill: currentColor; width: 26px; height: 26px; }
+
+        .modal-content { padding: 20px; flex: 1; overflow-y: auto; }
+
+        /* FORMS & INPUTS */
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 13px; color: var(--yt-text-secondary); margin-bottom: 6px; }
+        .form-input {
+            width: 100%; background-color: var(--yt-bg); border: 1px solid var(--yt-border);
+            color: var(--yt-text-primary); padding: 12px; border-radius: 8px;
+            font-size: 16px; outline: none; transition: border-color 0.2s;
+        }
+        .form-input:focus { border-color: var(--accent-color); }
+        textarea.form-input { resize: none; height: 100px; }
+        
+        /* DETAILS MODAL SPECIFIC */
+        .details-summary-card {
+            background: var(--yt-card); border: 1px solid var(--yt-border);
+            padding: 30px 20px; border-radius: 12px; margin-bottom: 20px; text-align: center;
+            position: relative;
+        }
+        .details-name { font-size: 26px; font-weight: bold; margin-bottom: 5px; padding: 0 20px;}
+        .details-type { font-size: 14px; color: var(--yt-text-secondary); font-family: monospace; margin-bottom: 20px; }
+        
+        .details-info-block { text-align: left; background: var(--yt-bg); border-radius: 8px; padding: 15px; margin-top: 20px; border: 1px solid var(--yt-border); }
+        .details-info-label { font-size: 12px; color: var(--yt-text-secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;}
+        .details-info-value { font-size: 16px; color: var(--yt-text-primary); margin-bottom: 12px; }
+        .details-info-value:last-child { margin-bottom: 0; }
+
+        .btn-full-width {
+            width: 100%; padding: 14px; border: none; border-radius: 8px;
+            font-size: 16px; font-weight: bold; margin-top: 12px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px; color: #000;
+        }
+        .btn-primary { background-color: var(--accent-color); }
+        .btn-danger { background-color: transparent; border: 1px solid var(--danger-color); color: var(--danger-color); margin-top: 30px;}
+
+        /* SEARCH BAR OVERRIDES */
+        .search-input-wrapper { flex: 1; }
+        .search-input {
+            width: 100%; background: transparent; border: none; color: var(--yt-text-primary);
+            font-size: 16px; outline: none; padding: 5px;
+        }
+        .search-input::placeholder { color: var(--yt-text-secondary); }
+        .empty-state { text-align: center; color: var(--yt-text-secondary); margin-top: 40px; }
+
+        /* PROFESSIONAL MINI MODAL */
+        .mini-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.75); z-index: 200;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+        }
+        .mini-modal-overlay.active { opacity: 1; pointer-events: auto; }
+        
+        .mini-modal-card {
+            background: var(--yt-card); border: 1px solid var(--yt-border);
+            width: 90%; max-width: 340px; border-radius: 12px; padding: 20px;
+            transform: scale(0.9); transition: transform 0.2s cubic-bezier(0.1, 0.9, 0.2, 1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .mini-modal-overlay.active .mini-modal-card { transform: scale(1); }
+        
+        .mini-modal-card h3 { font-size: 18px; margin-bottom: 10px; color: var(--yt-text-primary); }
+        .mini-modal-card p { font-size: 15px; color: var(--yt-text-secondary); margin-bottom: 24px; line-height: 1.4; }
+        
+        .mini-modal-actions { display: flex; justify-content: flex-end; gap: 12px; }
+        .mini-modal-btn {
+            padding: 10px 18px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; outline: none;
+            font-size: 14px;
+        }
+        .mini-modal-btn:active { opacity: 0.7; }
+        .btn-mini-cancel { background: transparent; color: var(--yt-text-primary); }
+        .btn-mini-confirm { background: var(--accent-color); color: #000; }
+        .btn-mini-danger { background: var(--danger-color); color: white; }
+
+        .scroll-sentinel { height: 20px; width: 100%; flex-shrink: 0; }
+
+        .edit-btn { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.05); border: none; cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+        .edit-btn:active { background: rgba(255,255,255,0.15); }
+        .edit-btn svg { fill: var(--yt-text-secondary); width: 18px; height: 18px; }
+
+        /* SKELETON UI */
+        .skeleton-card { background-color: var(--yt-card); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--yt-border); }
+        .skeleton-text { background: linear-gradient(90deg, #1e1e1e 25%, #353535 50%, #1e1e1e 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite ease-in-out; border-radius: 6px; }
+        .skel-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+        .skel-name-inv { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+        .skel-name { height: 20px; width: 80%; }
+        .skel-inv { height: 16px; width: 40%; border-radius: 4px; }
+        .skel-amt-row { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+        .skel-pending { height: 16px; width: 40%; }
+        .skeleton-actions { display: flex; gap: 10px; margin-top: 15px; }
+        .skel-btn { height: 38px; flex: 1; border-radius: 20px; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-left">
+            <a href="index.html" class="header-back-btn" id="smart-back-btn">
+                <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path></svg>
+            </a>
+            <div class="brand">
+                <span class="meena">Meena</span> <span class="marketing">Parties</span>
+            </div>
+        </div>
+        <div class="action-icon" id="btn-open-search">
+            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 14z"></path></svg>
+        </div>
+    </header>
+
+    <main>
+        <div class="dashboard-stats">
+            <span id="quick-stats-count">Loading parties...</span>
+        </div>
+        
+        <div class="customer-grid" id="main-grid">
+            <!-- Skeletons -->
+            <div class="skeleton-card"><div class="skel-header"><div class="skel-name-inv"><div class="skeleton-text skel-name"></div><div class="skeleton-text skel-inv"></div></div></div><div class="skel-amt-row"><div class="skeleton-text skel-pending"></div></div><div class="skeleton-actions"><div class="skeleton-text skel-btn"></div></div></div>
+            <div class="skeleton-card"><div class="skel-header"><div class="skel-name-inv"><div class="skeleton-text skel-name" style="width:60%"></div><div class="skeleton-text skel-inv" style="width:30%"></div></div></div><div class="skel-amt-row"><div class="skeleton-text skel-pending" style="width:60%"></div></div><div class="skeleton-actions"><div class="skeleton-text skel-btn"></div></div></div>
+        </div>
+        <div id="main-sentinel" class="scroll-sentinel"></div>
+    </main>
+
+    <div class="fab" id="btn-open-add" style="display: none;">
+        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path></svg>
+    </div>
+
+    <!-- ADD PARTY MODAL -->
+    <div class="full-modal" id="add-modal">
+        <div class="modal-header">
+            <button class="modal-back-btn" id="btn-close-add">
+                <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path></svg>
+            </button>
+            <h2 style="font-size: 18px;">Add New Party</h2>
+        </div>
+        <div class="modal-content">
+            <form id="add-form">
+                <div class="form-group">
+                    <label class="form-label">Party Name</label>
+                    <input type="text" id="add-name" class="form-input" required placeholder="e.g. Rahul Kumar" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone Number</label>
+                    <input type="tel" id="add-phone" class="form-input" required placeholder="e.g. 9876543210" inputmode="numeric" pattern="[0-9]*" maxlength="15">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Party Type</label>
+                    <select id="add-type" class="form-input" required>
+                        <option value="Customer">Customer</option>
+                        <option value="Supplier">Supplier</option>
+                        <option value="Vendor">Vendor</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Address / Notes</label>
+                    <textarea id="add-address" class="form-input" placeholder="Enter full address or notes..."></textarea>
+                </div>
+                <button type="submit" class="btn-full-width btn-primary" id="btn-submit-add">Add Party</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- EDIT PARTY MODAL -->
+    <div class="full-modal" id="edit-modal">
+        <div class="modal-header">
+            <button class="modal-back-btn" id="btn-close-edit">
+                <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path></svg>
+            </button>
+            <h2 style="font-size: 18px;">Edit Party Details</h2>
+        </div>
+        <div class="modal-content">
+            <form id="edit-form">
+                <div class="form-group">
+                    <label class="form-label">Party Name</label>
+                    <input type="text" id="edit-name" class="form-input" required autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone Number</label>
+                    <input type="tel" id="edit-phone" class="form-input" required inputmode="numeric" pattern="[0-9]*" maxlength="15">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Party Type</label>
+                    <select id="edit-type" class="form-input" required>
+                        <option value="Customer">Customer</option>
+                        <option value="Supplier">Supplier</option>
+                        <option value="Vendor">Vendor</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Address / Notes</label>
+                    <textarea id="edit-address" class="form-input"></textarea>
+                </div>
+                <button type="submit" class="btn-full-width btn-primary" id="btn-submit-edit">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- PARTY DETAILS MODAL -->
+    <div class="full-modal" id="details-modal">
+        <div class="modal-header">
+            <button class="modal-back-btn" id="btn-close-details">
+                <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path></svg>
+            </button>
+            <h2 style="font-size: 18px;">Party Info</h2>
+        </div>
+        <div class="modal-content">
+            <div class="details-summary-card">
+                <button id="btn-open-edit" class="edit-btn">
+                    <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path></svg>
+                </button>
+                <div class="details-name" id="details-ui-name">-</div>
+                <div class="details-type" id="details-ui-type">-</div>
+                
+                <div class="details-info-block">
+                    <div class="details-info-label">Phone Number</div>
+                    <div class="details-info-value" id="details-ui-phone">-</div>
+                    
+                    <div class="details-info-label">Address / Notes</div>
+                    <div class="details-info-value" id="details-ui-address" style="line-height: 1.4;">-</div>
+                </div>
+
+                <a href="#" id="details-btn-call" class="btn btn-call" style="margin-top: 25px; padding: 14px;">
+                    <svg viewBox="0 0 24 24"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.57a1 1 0 0 0-1.01.24l-1.57 1.57c-2.83-1.44-5.15-3.76-6.59-6.59l1.57-1.57a1 1 0 0 0 .24-1.01 11.28 11.28 0 0 1-.57-3.53c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.58c0-.55-.45-1-1-1z"></path></svg>
+                    Call Party
+                </a>
+
+                <button class="btn-full-width btn-danger" id="btn-delete-party">
+                    Delete Party
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SEARCH MODAL -->
+    <div class="full-modal" id="search-modal">
+        <div class="modal-header">
+            <button class="modal-back-btn" id="btn-close-search">
+                <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path></svg>
+            </button>
+            <div class="search-input-wrapper">
+                <input type="text" id="search-input" class="search-input" placeholder="Search by name, phone or type..." autocomplete="off">
+            </div>
+            <div id="btn-clear-search" style="cursor: pointer; padding: 5px; display: none;">
+                <svg viewBox="0 0 24 24" style="fill: var(--yt-text-secondary); width: 20px; height: 20px;"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+            </div>
+        </div>
+        <div class="modal-content" style="background: var(--yt-bg); display: flex; flex-direction: column;">
+            <div class="customer-grid" id="search-results"></div>
+        </div>
+    </div>
+
+    <!-- MINI MODAL CONFIRMATION -->
+    <div class="mini-modal-overlay" id="mini-modal">
+        <div class="mini-modal-card">
+            <h3 id="mini-modal-title">Title</h3>
+            <p id="mini-modal-message">Message</p>
+            <div class="mini-modal-actions">
+                <button class="mini-modal-btn btn-mini-cancel" id="mini-modal-cancel">Cancel</button>
+                <button class="mini-modal-btn btn-mini-confirm" id="mini-modal-confirm">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db } from './config.js'; 
+        import { doc, onSnapshot, setDoc, updateDoc, arrayUnion, runTransaction } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+        // GLOBAL COPY & CONTEXT MENU PREVENTION
+        document.addEventListener('contextmenu', e => { if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault(); });
+        document.addEventListener('copy', e => { if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault(); });
+        document.addEventListener('cut', e => { if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault(); });
+
+        // SMART BACK BUTTON
+        document.getElementById('smart-back-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            if (document.referrer && document.referrer.indexOf(window.location.host) !== -1) {
+                window.history.back();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        // DOM ELEMENTS
+        const addModal = document.getElementById('add-modal');
+        const detailsModal = document.getElementById('details-modal');
+        const searchModal = document.getElementById('search-modal');
+        const editModal = document.getElementById('edit-modal');
+        const searchInput = document.getElementById('search-input');
+        const btnClearSearch = document.getElementById('btn-clear-search');
+        
+        let partiesData = []; 
+        let currentSearchResults = [];
+        let currentEditRecord = null; 
+        
+        const ITEMS_PER_PAGE = 15;
+        let mainVisibleCount = ITEMS_PER_PAGE;
+        let searchVisibleCount = ITEMS_PER_PAGE;
+        let isLoadingMain = false;
+        let isLoadingSearch = false;
+
+        // SCROLL LISTENERS
+        window.addEventListener('scroll', () => {
+            if (isLoadingMain) return;
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 600) {
+                if (mainVisibleCount < partiesData.length) {
+                    isLoadingMain = true;
+                    renderGrid(partiesData.slice(mainVisibleCount, mainVisibleCount + ITEMS_PER_PAGE), 'main-grid', mainVisibleCount, true);
+                    mainVisibleCount += ITEMS_PER_PAGE;
+                    setTimeout(() => { isLoadingMain = false; }, 50);
+                }
+            }
+        });
+
+        const searchContentBox = document.querySelector('#search-modal .modal-content');
+        searchContentBox.addEventListener('scroll', () => {
+            if (isLoadingSearch) return;
+            if (searchContentBox.scrollTop + searchContentBox.clientHeight >= searchContentBox.scrollHeight - 600) {
+                if (searchVisibleCount < currentSearchResults.length) {
+                    isLoadingSearch = true;
+                    renderGrid(currentSearchResults.slice(searchVisibleCount, searchVisibleCount + ITEMS_PER_PAGE), 'search-results', searchVisibleCount, true);
+                    searchVisibleCount += ITEMS_PER_PAGE;
+                    setTimeout(() => { isLoadingSearch = false; }, 50);
+                }
+            }
+        });
+
+        function checkFillScreen() {
+            if (mainVisibleCount < partiesData.length && document.body.offsetHeight <= window.innerHeight + 100) {
+                renderGrid(partiesData.slice(mainVisibleCount, mainVisibleCount + ITEMS_PER_PAGE), 'main-grid', mainVisibleCount, true);
+                mainVisibleCount += ITEMS_PER_PAGE;
+                setTimeout(checkFillScreen, 100);
+            }
+        }
+
+        // MINI MODAL SYSTEM
+        let activeConfirmCallback = null;
+        
+        function openMiniModal(title, message, isAlert = false, callback = null, isDanger = false) {
+            document.getElementById('mini-modal-title').innerHTML = title;
+            document.getElementById('mini-modal-message').innerHTML = message;
+            activeConfirmCallback = callback;
+            
+            const confirmBtn = document.getElementById('mini-modal-confirm');
+            if (isDanger) {
+                confirmBtn.className = 'mini-modal-btn btn-mini-danger';
+            } else {
+                confirmBtn.className = 'mini-modal-btn btn-mini-confirm';
+            }
+
+            if (isAlert) {
+                document.getElementById('mini-modal-cancel').style.display = 'none';
+                confirmBtn.innerText = 'OK';
+            } else {
+                document.getElementById('mini-modal-cancel').style.display = 'block';
+                confirmBtn.innerText = isDanger ? 'Delete' : 'Confirm';
+            }
+            
+            document.getElementById('mini-modal').classList.add('active');
+            history.pushState({ miniModalOpen: true }, '');
+        }
+
+        function closeMiniModal() { document.getElementById('mini-modal').classList.remove('active'); }
+        document.getElementById('mini-modal-cancel').addEventListener('click', () => { if (history.state?.miniModalOpen) history.back(); else closeMiniModal(); });
+        document.getElementById('mini-modal-confirm').addEventListener('click', () => {
+            if (history.state?.miniModalOpen) history.back(); else closeMiniModal();
+            if (activeConfirmCallback) activeConfirmCallback();
+        });
+
+        // MODAL TOGGLE ENGINE
+        function openModal(modalEl, stateName) {
+            modalEl.classList.add('active');
+            document.body.classList.add('no-scroll');
+            history.pushState({ [stateName]: true }, '');
+            if(stateName === 'searchOpen') setTimeout(() => searchInput.focus(), 300);
+        }
+
+        function closeModal(modalEl) {
+            modalEl.classList.remove('active');
+            document.body.classList.remove('no-scroll');
+        }
+
+        document.getElementById('btn-open-add').addEventListener('click', () => { openModal(addModal, 'addOpen'); });
+        document.getElementById('btn-close-add').addEventListener('click', () => { if (history.state?.addOpen) history.back(); else closeModal(addModal); });
+        document.getElementById('btn-close-details').addEventListener('click', () => { if (history.state?.detailsOpen) history.back(); else closeModal(detailsModal); });
+
+        document.getElementById('btn-open-search').addEventListener('click', () => {
+            searchInput.value = ''; currentSearchResults = [];
+            document.getElementById('search-results').innerHTML = '<div class="empty-state">Start typing to search...</div>';
+            btnClearSearch.style.display = 'none';
+            openModal(searchModal, 'searchOpen');
+        });
+        document.getElementById('btn-close-search').addEventListener('click', () => { if (history.state?.searchOpen) history.back(); else closeModal(searchModal); });
+
+        document.getElementById('btn-open-edit').addEventListener('click', () => {
+            if(!currentEditRecord) return;
+            document.getElementById('edit-name').value = currentEditRecord.partyName || '';
+            document.getElementById('edit-phone').value = currentEditRecord.phone || '';
+            document.getElementById('edit-type').value = currentEditRecord.partyType || 'Customer';
+            document.getElementById('edit-address').value = currentEditRecord.address || '';
+            openModal(editModal, 'editOpen');
+        });
+        document.getElementById('btn-close-edit').addEventListener('click', () => { if (history.state?.editOpen) history.back(); else closeModal(editModal); });
+
+        window.addEventListener('popstate', (e) => {
+            if (!e.state?.addOpen && addModal.classList.contains('active')) closeModal(addModal);
+            if (!e.state?.searchOpen && searchModal.classList.contains('active')) closeModal(searchModal);
+            if (!e.state?.detailsOpen && detailsModal.classList.contains('active')) closeModal(detailsModal);
+            if (!e.state?.editOpen && editModal.classList.contains('active')) closeModal(editModal);
+            if (!e.state?.miniModalOpen && document.getElementById('mini-modal').classList.contains('active')) closeMiniModal();
+        });
+
+        // CORE REALTIME SNAPSHOT LISTENER - Using 'parties' collection
+        const docRef = doc(db, 'parties', 'all_data');
+
+        onSnapshot(docRef, (snap) => {
+            document.getElementById('btn-open-add').style.display = 'flex';
+
+            if (snap.exists()) {
+                partiesData = snap.data().records || []; 
+                // Sort by name alphabetically
+                partiesData.sort((a, b) => (a.partyName || '').localeCompare(b.partyName || ''));
+                
+                document.getElementById('quick-stats-count').innerText = `${partiesData.length} Total Parties`;
+                if(mainVisibleCount < ITEMS_PER_PAGE) mainVisibleCount = ITEMS_PER_PAGE;
+                
+                renderGrid(partiesData.slice(0, mainVisibleCount), 'main-grid', 0, false);
+                setTimeout(checkFillScreen, 200);
+                if(searchModal.classList.contains('active')) handleSearch();
+            } else {
+                setDoc(docRef, { records: [] });
+                partiesData = [];
+                document.getElementById('quick-stats-count').innerText = "0 Parties";
+                document.getElementById('main-grid').innerHTML = '<div class="empty-state">No parties found.</div>';
+            }
+        });
+
+        // OPEN PARTY MANAGER DETAILS
+        window.openPartyManager = function(recordId) {
+            const record = partiesData.find(r => r.id === recordId);
+            if(!record) return;
+            currentEditRecord = record;
+
+            const cleanPhone = (record.phone || "").replace(/[^0-9]/g, '');
+
+            document.getElementById('details-ui-name').innerText = record.partyName || "Unknown Party";
+            document.getElementById('details-ui-type').innerText = record.partyType || "N/A";
+            document.getElementById('details-ui-phone').innerText = record.phone || "No phone provided";
+            document.getElementById('details-ui-address').innerText = record.address || "No address provided";
+            
+            document.getElementById('details-btn-call').href = cleanPhone ? `tel:${cleanPhone}` : '#';
+
+            openModal(detailsModal, 'detailsOpen');
+        };
+
+        // ATOMIC RECORD INSERTION
+        document.getElementById('add-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit-add');
+            btn.disabled = true;
+            btn.innerText = "Adding...";
+
+            const newRecord = {
+                id: Date.now().toString(),
+                partyName: document.getElementById('add-name').value.trim(),
+                phone: document.getElementById('add-phone').value.trim(),
+                partyType: document.getElementById('add-type').value,
+                address: document.getElementById('add-address').value.trim(),
+                dateAdded: new Date().toISOString()
+            };
+
+            try {
+                await updateDoc(docRef, { records: arrayUnion(newRecord) });
+                document.getElementById('add-form').reset();
+                if (history.state?.addOpen) history.back(); else closeModal(addModal);
+            } catch (err) {
+                openMiniModal("Error", "Error adding record: " + err.message, true);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Add Party";
+            }
+        });
+
+        // TRANSACTIONAL EDIT ENGINE
+        document.getElementById('edit-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit-edit');
+            btn.disabled = true;
+            btn.innerText = "Saving...";
+
+            const updatedName = document.getElementById('edit-name').value.trim();
+            const updatedPhone = document.getElementById('edit-phone').value.trim();
+            const updatedType = document.getElementById('edit-type').value;
+            const updatedAddress = document.getElementById('edit-address').value.trim();
+
+            try {
+                await runTransaction(db, async (transaction) => {
+                    const sfDoc = await transaction.get(docRef);
+                    if (!sfDoc.exists()) throw "Database document missing!";
+                    const serverRecords = sfDoc.data().records || [];
+                    
+                    const updatedRecords = serverRecords.map(r => 
+                        r.id === currentEditRecord.id ? { 
+                            ...r, 
+                            partyName: updatedName,
+                            phone: updatedPhone,
+                            partyType: updatedType,
+                            address: updatedAddress
+                        } : r
+                    );
+                    transaction.update(docRef, { records: updatedRecords });
+                });
+                
+                // Update Local UI instantly
+                currentEditRecord.partyName = updatedName;
+                currentEditRecord.phone = updatedPhone;
+                currentEditRecord.partyType = updatedType;
+                currentEditRecord.address = updatedAddress;
+                
+                const cleanPhone = (updatedPhone || "").replace(/[^0-9]/g, '');
+                
+                document.getElementById('details-ui-name').innerText = currentEditRecord.partyName;
+                document.getElementById('details-ui-type').innerText = currentEditRecord.partyType;
+                document.getElementById('details-ui-phone').innerText = currentEditRecord.phone || "No phone provided";
+                document.getElementById('details-ui-address').innerText = currentEditRecord.address || "No address provided";
+                document.getElementById('details-btn-call').href = cleanPhone ? `tel:${cleanPhone}` : '#';
+                
+                if (history.state?.editOpen) history.back(); else closeModal(editModal);
+            } catch (err) {
+                openMiniModal("Sync Error", "Error updating record: " + err, true);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Save Changes";
+            }
+        });
+
+        // DELETE ACTION
+        document.getElementById('btn-delete-party').addEventListener('click', function() {
+            const btnEl = this;
+            openMiniModal(
+                "Confirm Deletion", 
+                `Are you sure you want to permanently delete <b>${currentEditRecord.partyName}</b>? This cannot be undone.`, 
+                false, 
+                async () => {
+                    const originalText = btnEl.innerHTML;
+                    btnEl.disabled = true;
+                    btnEl.innerHTML = "Deleting...";
+                    try {
+                        await runTransaction(db, async (transaction) => {
+                            const sfDoc = await transaction.get(docRef);
+                            if (!sfDoc.exists()) throw "Database document missing!";
+                            const serverRecords = sfDoc.data().records || [];
+                            const updatedRecords = serverRecords.filter(r => r.id !== currentEditRecord.id);
+                            transaction.update(docRef, { records: updatedRecords });
+                        });
+                        if (history.state?.detailsOpen) history.back(); else closeModal(detailsModal);
+                    } catch (err) {
+                        openMiniModal("Sync Error", "Could not delete party: " + err, true);
+                    } finally {
+                        btnEl.disabled = false;
+                        btnEl.innerHTML = originalText;
+                    }
+                },
+                true // Is Danger flag for Red button
+            );
+        });
+
+        // FILTERS / SEARCH HANDLER
+        function handleSearch() {
+            const query = searchInput.value.toLowerCase().trim();
+            btnClearSearch.style.display = query ? 'block' : 'none';
+
+            if (!query) {
+                currentSearchResults = [];
+                document.getElementById('search-results').innerHTML = '<div class="empty-state">Start typing to search...</div>';
+                return;
+            }
+
+            currentSearchResults = partiesData.filter(item => 
+                (item.partyName || "").toLowerCase().includes(query) || 
+                (item.partyType || "").toLowerCase().includes(query) ||
+                (item.phone || "").includes(query)
+            );
+
+            searchVisibleCount = ITEMS_PER_PAGE; 
+
+            if (currentSearchResults.length === 0) {
+                document.getElementById('search-results').innerHTML = '<div class="empty-state">No matches found.</div>';
+            } else {
+                renderGrid(currentSearchResults.slice(0, searchVisibleCount), 'search-results', 0, false);
+            }
+        }
+
+        searchInput.addEventListener('input', handleSearch);
+        btnClearSearch.addEventListener('click', () => {
+            searchInput.value = '';
+            handleSearch();
+            searchInput.focus();
+        });
+
+        // UI RENDER ENGINE
+        function renderGrid(dataArray, targetContainerId, startIndex = 0, isAppend = false) {
+            const container = document.getElementById(targetContainerId);
+            
+            const html = dataArray.map((item) => {
+                const cleanPhone = (item.phone || "").replace(/[^0-9]/g, '');
+                
+                return `
+                    <div class="card" data-id="${item.id}">
+                        <div class="card-body-clickable" onclick="openPartyManager('${item.id}')">
+                            <div class="card-header">
+                                <div>
+                                    <div class="customer-name">${item.partyName || "Unknown"}</div>
+                                    <div class="party-type">${item.partyType || "Other"}</div>
+                                </div>
+                            </div>
+                            <div class="info-row">
+                                <div class="party-phone">${item.phone || "No Phone"}</div>
+                            </div>
+                            <div class="party-address">${item.address || "No Address Provided"}</div>
+                        </div>
+                        <div class="actions">
+                            <a href="tel:${cleanPhone}" class="btn btn-call" onclick="event.stopPropagation();">
+                                <svg viewBox="0 0 24 24"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.57a1 1 0 0 0-1.01.24l-1.57 1.57c-2.83-1.44-5.15-3.76-6.59-6.59l1.57-1.57a1 1 0 0 0 .24-1.01 11.28 11.28 0 0 1-.57-3.53c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.58c0-.55-.45-1-1-1z"></path></svg>
+                                Call Party
+                            </a>
+                        </div>
+                    </div>`;
+            }).join('');
+
+            if (isAppend) {
+                container.insertAdjacentHTML('beforeend', html);
+            } else {
+                container.innerHTML = html;
+            }
+        }
+
+        // NATIVE HAPTIC VIBRATION ENGINE
+        function performHapticFeedback(duration = 15) {
+            if (typeof navigator !== 'undefined' && navigator.vibrate) {
+                navigator.vibrate(duration);
+            }
+        }
+
+        document.addEventListener('click', (event) => {
+            const targetElement = event.target.closest('.btn, .fab, .header-back-btn, .modal-back-btn, .edit-btn, .mini-modal-btn, .card-body-clickable, button, [type="submit"]');
+            if (targetElement) {
+                if (targetElement.id === 'mini-modal-confirm' || targetElement.classList.contains('btn-danger')) {
+                    performHapticFeedback();
+                } else if (targetElement.classList.contains('btn-mini-cancel') || targetElement.id === 'btn-clear-search') {
+                    performHapticFeedback(10);
+                } else {
+                    performHapticFeedback(20);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
