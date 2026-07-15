@@ -562,10 +562,10 @@
         <div class="user-profile-badge" id="current-user-badge">
             <div class="user-profile-details">
                 <span class="user-profile-name" id="current-user-name"><div class="skeleton skeleton-text short" style="margin:0;"></div></span>
-                <span class="user-profile-role" id="current-user-role">...</span>
+                <span class="user-profile-role" id="current-user-role"><div class="skeleton skeleton-text short" style="margin:0; width: 40px; height: 10px;"></div></span>
             </div>
-            <!-- Added onerror to handle broken profile images globally -->
-            <img id="current-user-pic" src="https://via.placeholder.com/90" alt="Profile" onerror="this.onerror=null; this.src='https://via.placeholder.com/90'">
+            <!-- Added onerror to handle broken profile images globally and a base64 transparent GIF as initial skeleton placeholder -->
+            <img id="current-user-pic" class="skeleton" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Profile" onerror="this.onerror=null; this.src='https://via.placeholder.com/90'">
         </div>
     </header>
 
@@ -579,6 +579,61 @@
 
         <div id="users-grid" class="users-grid">
             <!-- User cards will be injected here -->
+            <!-- Hardcoded Initial Skeleton Cards for Instant Page Load Feedback -->
+            <div class="user-card skeleton-card">
+                <div class="user-card-info">
+                    <div class="skeleton skeleton-img"></div>
+                    <div class="user-card-text" style="width:100%">
+                        <div class="skeleton skeleton-text"></div>
+                        <div class="skeleton skeleton-text short"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="user-card skeleton-card">
+                <div class="user-card-info">
+                    <div class="skeleton skeleton-img"></div>
+                    <div class="user-card-text" style="width:100%">
+                        <div class="skeleton skeleton-text"></div>
+                        <div class="skeleton skeleton-text short"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="user-card skeleton-card">
+                <div class="user-card-info">
+                    <div class="skeleton skeleton-img"></div>
+                    <div class="user-card-text" style="width:100%">
+                        <div class="skeleton skeleton-text"></div>
+                        <div class="skeleton skeleton-text short"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="user-card skeleton-card">
+                <div class="user-card-info">
+                    <div class="skeleton skeleton-img"></div>
+                    <div class="user-card-text" style="width:100%">
+                        <div class="skeleton skeleton-text"></div>
+                        <div class="skeleton skeleton-text short"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="user-card skeleton-card">
+                <div class="user-card-info">
+                    <div class="skeleton skeleton-img"></div>
+                    <div class="user-card-text" style="width:100%">
+                        <div class="skeleton skeleton-text"></div>
+                        <div class="skeleton skeleton-text short"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="user-card skeleton-card">
+                <div class="user-card-info">
+                    <div class="skeleton skeleton-img"></div>
+                    <div class="user-card-text" style="width:100%">
+                        <div class="skeleton skeleton-text"></div>
+                        <div class="skeleton skeleton-text short"></div>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <!-- Sentinel for Infinite Scrolling -->
@@ -668,7 +723,14 @@
                 const userDocRef = doc(db, "users", user.uid);
                 const userDocSnap = await getDoc(userDocRef);
                 
-                document.getElementById('current-user-pic').src = user.photoURL || 'https://via.placeholder.com/90';
+                // Advanced robust broken image handler added here for JS setting
+                const profileImg = document.getElementById('current-user-pic');
+                profileImg.classList.remove('skeleton');
+                profileImg.onerror = function() {
+                    this.onerror = null;
+                    this.src = 'https://via.placeholder.com/90';
+                };
+                profileImg.src = user.photoURL || 'https://via.placeholder.com/90';
                 
                 if (userDocSnap.exists()) {
                     const userData = userDocSnap.data();
