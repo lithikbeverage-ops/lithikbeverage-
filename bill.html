@@ -190,7 +190,6 @@
     <div class="toast-msg error" id="errorToast"><span class="material-symbols-outlined">error</span><span id="errorToastText">Error</span></div>
     <div class="toast-msg success" id="successToast"><span class="material-symbols-outlined">check_circle</span><span id="successToastText">Success</span></div>
 
-    <!-- MAIN APP SHELL -->
     <div id="app-shell">
         <header>
             <div class="header-left">
@@ -200,7 +199,6 @@
         </header>
 
         <div class="layout-container">
-            <!-- Sidebar (Desktop) -->
             <nav class="sidebar" id="desktop-nav"></nav>
 
             <div class="main-scroll-area">
@@ -253,8 +251,7 @@
                                 <label>Search Inventory *</label>
                                 <input type="text" id="pSearch" placeholder="Type product name..." autocomplete="off">
                                 <div class="suggestions" id="pSuggestions">
-                                    <!-- Dynamic Search Results -->
-                                </div>
+                                    </div>
                             </div>
 
                             <input type="hidden" id="pInvId">
@@ -283,8 +280,14 @@
                                     <input type="number" id="pDiscount" value="0" min="0" placeholder="0">
                                 </div>
                                 <div>
-                                    <label>Manual GST % *</label>
-                                    <input type="number" id="pGst" value="18" min="0" max="100" placeholder="e.g. 18">
+                                    <label>GST % (Optional)</label>
+                                    <select id="pGst">
+                                        <option value="0">No GST</option>
+                                        <option value="5">5%</option>
+                                        <option value="12">12%</option>
+                                        <option value="18" selected>18%</option>
+                                        <option value="28">28%</option>
+                                    </select>
                                 </div>
                             </div>
 
@@ -304,6 +307,18 @@
                         <div style="margin-top: 24px;">
                             <label>Add Transport Charges (₹)</label>
                             <input type="number" id="cTransport" value="0" min="0" placeholder="0" oninput="renderCart()">
+                        </div>
+                        
+                        <div id="invoiceNoContainer" style="margin-top: 15px; padding: 15px; background: var(--input-bg); border-radius: 12px; border: 1px dashed var(--border-color); margin-bottom: 24px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <label style="margin: 0; color: var(--text-main); font-weight: 700; font-size: 0.9em;">Invoice Details</label>
+                            </div>
+                            <div class="input-row">
+                                <div>
+                                    <label>Custom Invoice Number</label>
+                                    <input type="text" id="customInvNo" placeholder="Auto-generated (e.g. INV-00001)">
+                                </div>
+                            </div>
                         </div>
 
                         <div class="totals-box">
@@ -327,12 +342,10 @@
                 </div>
             </div>
 
-            <!-- Bottom Nav (Mobile) -->
             <nav class="bottom-nav" id="mobile-nav"></nav>
         </div>
     </div>
 
-    <!-- PRINT LAYOUT (Hidden from App Shell, Isolated for physical printing) -->
     <div id="printArea">
         <div class="print-top-band">
             <div class="print-header-left">
@@ -419,7 +432,7 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
         import { collection, query, where, limit, getDocs, doc, writeBatch, serverTimestamp, increment, onSnapshot } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
-        // COMPLETE Navigation Data Setup
+        // COMPLETE Navigation Data Setup (All Items Added Back)
         const navItems = [
             { name: 'Dashboard', path: 'index.html', icon: '<path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>' },
             { name: 'Billing', path: 'bill.html', icon: '<path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/>' },
@@ -427,7 +440,10 @@
             { name: 'Inventory', path: 'inventory.html', icon: '<path d="M20 2H4c-1.1 0-2 .9-2 2v3.01c0 .72.43 1.34 1 1.69V20c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8.7c.57-.35 1-.97 1-1.69V4c0-1.1-.9-2-2-2zm-5 12H9v-2h6v2zm5-7H4V4h16v3z"/>' },
             { name: 'Purchase', path: 'purchase.html', icon: '<path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>' },
             { name: 'Sales', path: 'sales.html', icon: '<path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>' },
-            { name: 'Parties', path: 'parties.html', icon: '<path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>' }
+            { name: 'Parties', path: 'parties.html', icon: '<path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>' },
+            { name: 'Expenses', path: 'expenses.html', icon: '<path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>' },
+            { name: 'Accounts', path: 'accounts.html', icon: '<path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>' },
+            { name: 'Labour', path: 'attendance.html', icon: '<path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>' }
         ];
 
         const desktopNav = document.getElementById('desktop-nav');
@@ -477,6 +493,9 @@
                     }
                     currentInvoiceNumber = `INV-${nextInvCount.toString().padStart(5, '0')}`;
                     document.getElementById('displayInvoiceNo').innerText = currentInvoiceNumber;
+                    
+                    const customInput = document.getElementById('customInvNo');
+                    if (customInput) customInput.placeholder = `Auto (e.g. ${currentInvoiceNumber})`;
                 });
             } catch(e) { console.error("Error listening to invoice counter:", e); }
         }
@@ -501,7 +520,6 @@
                 suggestionsBox.innerHTML = '<div style="padding:14px 16px; color:var(--text-muted);">Searching... <span class="spinner" style="width:12px;height:12px;border-width:2px;"></span></div>';
                 
                 try {
-                    // Optimized Firebase Query (Requires a matching lowercase field if 'name' is not strictly capitalized, or standard str indexing)
                     const q = query(
                         collection(db, "inventory"), 
                         where("name", ">=", val),
@@ -559,7 +577,7 @@
             const price = parseFloat(document.getElementById('pPrice').value) || 0;
             const qty = parseInt(document.getElementById('pQty').value) || 1;
             const discount = parseFloat(document.getElementById('pDiscount').value) || 0; 
-            const gstPercent = parseFloat(document.getElementById('pGst').value) || 0; // Manual GST Input
+            const gstPercent = parseFloat(document.getElementById('pGst').value) || 0; 
             const invId = document.getElementById('pInvId').value;
             const currentStock = parseInt(document.getElementById('pCurrentStock').value) || 0;
 
@@ -680,17 +698,24 @@
             try {
                 const batch = writeBatch(db);
                 
+                // Construct Date and custom Invoice number safely
+                const cDateInput = document.getElementById('cDate').value;
+                const finalDate = cDateInput ? new Date(cDateInput) : serverTimestamp();
+                
+                let customInvNo = document.getElementById('customInvNo').value.trim();
+                let finalInvNo = customInvNo || currentInvoiceNumber;
+
                 // Save to 'sales' collection
                 const sellRef = doc(collection(db, "sales"));
                 batch.set(sellRef, {
-                    invoiceNo: currentInvoiceNumber,
+                    invoiceNo: finalInvNo,
                     customer: { 
                         name: cName, 
                         phone: document.getElementById('cPhone').value, 
                         address: document.getElementById('cAddress').value 
                     },
                     paymentMode: document.getElementById('cPaymentMode').value,
-                    date: new Date(document.getElementById('cDate').value),
+                    date: finalDate,
                     items: cartItems,
                     totals: billTotals,
                     createdAt: serverTimestamp()
@@ -701,14 +726,26 @@
                     batch.update(doc(db, "inventory", item.invId), { qty: increment(-item.qty) });
                 });
                 
-                // Increment Counter in Firebase Database
-                batch.update(doc(db, "settings", "invoiceCounters"), { nextInvoice: increment(1) });
+                // Smart logic: Auto increment based on provided sequence if available
+                let smartNextNormal = null;
+                if(customInvNo) {
+                    const numMatch = customInvNo.match(/(\d+)$/);
+                    if(numMatch) {
+                        smartNextNormal = parseInt(numMatch[1], 10) + 1;
+                    }
+                }
+                
+                // Update Invoice Counter Safely (Using merge so we don't throw an error on empty databases)
+                const counterRef = doc(db, "settings", "invoiceCounters");
+                batch.set(counterRef, { 
+                    nextInvoice: smartNextNormal !== null ? smartNextNormal : increment(1) 
+                }, { merge: true });
 
                 await batch.commit();
                 showToast("Bill Saved Successfully!", "success");
                 
                 // Build Print Layout
-                buildPrintLayout(currentInvoiceNumber);
+                buildPrintLayout(finalInvNo);
 
                 // Transform into Print Button
                 actionState = "PRINT";
@@ -770,6 +807,7 @@
                 document.getElementById('cPhone').value = '';
                 document.getElementById('cAddress').value = '';
                 document.getElementById('cTransport').value = '0';
+                document.getElementById('customInvNo').value = ''; // Reset Custom Inv Box
                 
                 cartItems.splice(0, cartItems.length);
                 renderCart();
