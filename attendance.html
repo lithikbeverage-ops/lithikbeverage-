@@ -69,7 +69,7 @@
         /* Layout Structure */
         #app-shell { display: flex; height: 100%; width: 100%; position: absolute; inset: 0; flex-direction: column; overflow: hidden; }
         
-        header { display: flex; align-items: center; justify-content: space-between; background-color: var(--bg-surface); padding: 12px 20px; border-bottom: 1px solid var(--border-color); z-index: 10; flex-shrink: 0; }
+        header { display: flex; align-items: center; justify-content: space-between; background-color: var(--bg-surface); padding: 12px 20px; border-bottom: 1px solid var(--border-color); z-index: 10; flex-shrink: 0; box-shadow: var(--shadow-sm); }
         .header-left { display: flex; align-items: center; gap: 12px; }
         .header-right { display: flex; align-items: center; gap: 12px; }
         
@@ -87,7 +87,7 @@
         nav.sidebar .nav-item { display: flex; align-items: center; text-decoration: none; color: var(--text-muted); padding: 14px 24px; gap: 16px; font-size: 1rem; font-weight: 500; transition: all 0.2s; cursor: pointer; }
         nav.sidebar .nav-item:hover, nav.sidebar .nav-item.active { background-color: rgba(59, 130, 246, 0.05); color: var(--primary-color); border-right: 3px solid var(--primary-color); }
         
-        nav.bottom-nav { display: flex; background-color: var(--bg-nav); border-top: 1px solid var(--border-color); min-height: 65px; height: calc(65px + env(safe-area-inset-bottom)); width: 100%; overflow-x: auto; overflow-y: hidden; scroll-behavior: smooth; padding: 0 10px; flex-shrink: 0; padding-bottom: env(safe-area-inset-bottom); position: relative; z-index: 100; }
+        nav.bottom-nav { display: flex; background-color: var(--bg-nav); border-top: 1px solid var(--border-color); min-height: 65px; height: calc(65px + env(safe-area-inset-bottom)); width: 100%; overflow-x: auto; overflow-y: hidden; scroll-behavior: smooth; padding: 0 10px; flex-shrink: 0; padding-bottom: env(safe-area-inset-bottom); position: relative; z-index: 100; box-shadow: 0 -1px 3px rgba(0,0,0,0.05); }
         nav.bottom-nav .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none; color: var(--text-muted); min-width: 72px; padding: 8px 4px; gap: 4px; font-size: 0.75rem; font-weight: 600; transition: all 0.2s; cursor: pointer; }
         nav.bottom-nav .nav-item.active { color: var(--primary-color); }
         .nav-icon { width: 24px; height: 24px; fill: currentColor; }
@@ -106,7 +106,7 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
         /* FAB & Search */
-        .top-actions { display: flex; gap: 12px; margin-bottom: 24px; align-items: center; }
+        .top-actions { display: flex; gap: 12px; margin-bottom: 24px; align-items: center; justify-content: space-between; }
         .search-container { flex: 1; display: flex; align-items: center; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; padding: 0 16px; transition: all 0.3s ease; box-shadow: var(--shadow-sm); }
         .search-container:focus-within { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
         .search-container input { border: none; background: transparent; width: 100%; padding: 14px 0 14px 12px; color: var(--text-main); font-size: 1rem; outline: none; font-family: 'Inter', sans-serif; }
@@ -119,6 +119,9 @@
         .btn-primary:active:not(:disabled) { transform: translateY(2px); box-shadow: none; }
         .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
+        .btn-outline { padding: 10px 16px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); font-size: 0.9rem; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; transition: all 0.2s; }
+        .btn-outline:hover { background: var(--input-bg); border-color: var(--primary-color); color: var(--primary-color); }
+
         .form-group { margin-bottom: 16px; text-align: left;}
         .form-label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
         .form-input { width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main); font-size: 1rem; outline: none; transition: all 0.2s; font-family: 'Inter', sans-serif;}
@@ -126,7 +129,8 @@
 
         /* Labour Roster Grid */
         .roster-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
-        .worker-card { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 12px; }
+        .worker-card { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 12px; transition: transform 0.2s, box-shadow 0.2s; }
+        .worker-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
         .worker-header { display: flex; justify-content: space-between; align-items: flex-start; }
         .worker-name { font-weight: 800; font-size: 1.15rem; color: var(--text-main); }
         .worker-role { font-size: 0.8rem; font-weight: 600; background: var(--input-bg); color: var(--text-muted); padding: 4px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px;}
@@ -139,17 +143,18 @@
 
         /* Attendance Marking View */
         .att-marking-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
-        .att-row { display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface); padding: 16px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); flex-wrap: wrap; gap: 12px; }
+        .att-row { display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface); padding: 16px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); flex-wrap: wrap; gap: 12px; transition: transform 0.2s; }
+        .att-row:hover { transform: scale(1.01); box-shadow: var(--shadow-md); }
         .att-info { flex: 1; min-width: 150px; }
         .att-name { font-weight: 700; font-size: 1.05rem; color: var(--text-main); margin-bottom: 4px; }
         .att-wage { font-size: 0.8rem; color: var(--text-muted); font-weight: 500;}
         
         /* Segmented Control */
-        .segmented-control { display: flex; background: var(--input-bg); border-radius: 10px; pading: 4px; border: 1px solid var(--border-color); overflow: hidden;}
+        .segmented-control { display: flex; background: var(--input-bg); border-radius: 10px; padding: 4px; border: 1px solid var(--border-color); overflow: hidden;}
         .seg-btn { flex: 1; padding: 8px 12px; border: none; background: transparent; font-size: 0.85rem; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: all 0.2s; min-width: 65px;}
-        .seg-btn.active.full { background: var(--success-color); color: white; }
-        .seg-btn.active.half { background: var(--warning-color); color: white; }
-        .seg-btn.active.absent { background: var(--danger-color); color: white; }
+        .seg-btn.active.full { background: var(--success-color); color: white; box-shadow: var(--shadow-sm); border-radius: 8px;}
+        .seg-btn.active.half { background: var(--warning-color); color: white; box-shadow: var(--shadow-sm); border-radius: 8px;}
+        .seg-btn.active.absent { background: var(--danger-color); color: white; box-shadow: var(--shadow-sm); border-radius: 8px;}
 
         /* Report Table */
         .table-container { background: var(--bg-surface); border-radius: 16px; border: 1px solid var(--border-color); overflow: auto; box-shadow: var(--shadow-sm); max-height: 70vh; }
@@ -161,6 +166,7 @@
         th:first-child { background: var(--input-bg); z-index: 4; }
         th:last-child, td:last-child { border-right: none; }
         tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover td { background-color: rgba(59, 130, 246, 0.02); }
         
         .status-badge { width: 24px; height: 24px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; color: white; }
         .status-badge.P { background: var(--success-color); }
@@ -256,6 +262,11 @@
 
                     <!-- TAB 3: MONTHLY REPORT -->
                     <div id="tab-report" class="tab-content">
+                        <div class="top-actions" style="justify-content: flex-end; margin-bottom: 16px;">
+                            <button class="btn-outline" onclick="exportTableToCSV()">
+                                <span class="material-symbols-outlined" style="font-size: 20px;">download</span> Export CSV
+                            </button>
+                        </div>
                         <div class="table-container">
                             <table id="reportTable">
                                 <thead>
@@ -304,7 +315,7 @@
 
             <div class="form-group" style="margin-bottom: 24px;">
                 <label class="form-label">Daily Wage (₹) *</label>
-                <input type="number" id="w_wage" class="form-input" placeholder="e.g. 500" required autocomplete="off">
+                <input type="number" id="w_wage" class="form-input" placeholder="e.g. 500" required autocomplete="off" min="0" step="0.01">
             </div>
 
             <button type="button" class="btn-primary" id="btnSaveWorker" onclick="saveWorker()">
@@ -402,12 +413,15 @@
         let rosterCache = []; 
         let attendanceState = {}; // Temp holds marking state before saving
 
-        // Date Initializations (Local Timezone Fix)
+        // Date Initializations (Local Timezone Fix & Guardrails)
         const todayObj = new Date();
         const localDateStr = new Date(todayObj.getTime() - (todayObj.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
         const localMonthStr = localDateStr.substring(0, 7); // YYYY-MM
         
-        document.getElementById('dailyDatePicker').value = localDateStr;
+        const dPickerInput = document.getElementById('dailyDatePicker');
+        dPickerInput.value = localDateStr;
+        dPickerInput.max = localDateStr; // Edge case fix: prevent future dates
+
         document.getElementById('monthPicker').value = localMonthStr;
 
         // Auth Check
@@ -464,24 +478,24 @@
         function renderRoster(filter = "") {
             const grid = document.getElementById('rosterGrid');
             if (rosterCache.length === 0) {
-                grid.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:40px;">No labour records found. Click + to add.</div>';
+                grid.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:40px; font-weight: 500;">No labour records found. Click + to add.</div>';
                 return;
             }
 
             const term = filter.toLowerCase();
-            const filtered = rosterCache.filter(w => w.name.toLowerCase().includes(term) || w.role.toLowerCase().includes(term));
+            const filtered = rosterCache.filter(w => w.name.toLowerCase().includes(term) || (w.role && w.role.toLowerCase().includes(term)));
             
             let html = '';
             filtered.forEach(w => {
                 html += `
                 <div class="worker-card">
                     <div class="worker-header">
-                        <div class="worker-name">${w.name}</div>
-                        ${w.role ? `<div class="worker-role">${w.role}</div>` : ''}
+                        <div class="worker-name">${escapeHTML(w.name)}</div>
+                        ${w.role ? `<div class="worker-role">${escapeHTML(w.role)}</div>` : ''}
                     </div>
                     <div>
                         <div class="worker-detail" style="margin-bottom: 4px;"><span class="material-symbols-outlined" style="font-size:16px;">payments</span> Wage: ₹${w.dailyWage}/day</div>
-                        ${w.phone ? `<div class="worker-detail"><span class="material-symbols-outlined" style="font-size:16px;">call</span> ${w.phone}</div>` : ''}
+                        ${w.phone ? `<div class="worker-detail"><span class="material-symbols-outlined" style="font-size:16px;">call</span> ${escapeHTML(w.phone)}</div>` : ''}
                     </div>
                     <div class="worker-actions">
                         <button class="btn-action edit" onclick="editWorker('${w.id}')" title="Edit"><span class="material-symbols-outlined" style="font-size:18px;">edit</span></button>
@@ -524,7 +538,7 @@
             const role = document.getElementById('w_role').value.trim();
             const wage = parseFloat(document.getElementById('w_wage').value);
 
-            if(!name || isNaN(wage)) { showToast("Name and Wage are required", "error"); return; }
+            if(!name || isNaN(wage) || wage < 0) { showToast("Name and a valid Wage are required", "error"); return; }
 
             btn.disabled = true; btn.innerHTML = "Saving...";
             
@@ -602,22 +616,22 @@
                 let html = '';
                 
                 if(rosterCache.length === 0) {
-                    container.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:40px;">No labour roster found.</div>';
+                    container.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:40px; font-weight: 500;">No active labour roster found to mark attendance.</div>';
                     return;
                 }
 
                 rosterCache.forEach(w => {
-                    // Default to 'present' if not previously marked
+                    // Default to 'present' if not previously marked. Safely resolve wage edge cases.
                     let status = savedRecords[w.id] ? savedRecords[w.id].status : 'P';
-                    let pastWage = savedRecords[w.id] ? savedRecords[w.id].wage : w.dailyWage; // Keep historical wage if already marked
+                    let pastWage = savedRecords[w.id]?.wage ?? w.dailyWage ?? 0;
 
                     attendanceState[w.id] = { name: w.name, status: status, wage: pastWage };
 
                     html += `
                     <div class="att-row" id="row_${w.id}">
                         <div class="att-info">
-                            <div class="att-name">${w.name}</div>
-                            <div class="att-wage">Wage: ₹${pastWage}/day</div>
+                            <div class="att-name">${escapeHTML(w.name)}</div>
+                            <div class="att-wage">Wage: ₹${parseFloat(pastWage).toLocaleString('en-IN')}/day</div>
                         </div>
                         <div class="segmented-control">
                             <button class="seg-btn full ${status === 'P' ? 'active' : ''}" onclick="setMark('${w.id}', 'P')">Full (P)</button>
@@ -631,7 +645,7 @@
 
             } catch(e) {
                 console.error(e);
-                container.innerHTML = '<div style="text-align:center; color:var(--danger-color); padding:20px;">Failed to load.</div>';
+                container.innerHTML = '<div style="text-align:center; color:var(--danger-color); padding:20px; font-weight: 600;">Failed to load attendance records.</div>';
             }
         }
 
@@ -665,7 +679,7 @@
                 };
                 
                 await setDoc(attDocRef, payload);
-                showToast("Attendance Saved!");
+                showToast("Attendance Saved successfully!");
             } catch(e) {
                 console.error(e);
                 showToast("Failed to save", "error");
@@ -731,7 +745,7 @@
                 let bodyHTML = '';
                 
                 if (allIncludedLabourIds.size === 0) {
-                    tbody.innerHTML = `<tr><td colspan="${daysInMonth + 3}" style="text-align:center;">No data found for this month.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="${daysInMonth + 3}" style="text-align:center; font-weight: 500;">No attendance data found for this month.</td></tr>`;
                     return;
                 }
 
@@ -742,26 +756,35 @@
                     const workerData = historicalLabourData[lId];
                     let totalDays = 0;
                     let totalWage = 0;
-                    let rowHTML = `<td><strong>${workerData.name}</strong></td>`;
+                    let rowHTML = `<td><strong>${escapeHTML(workerData.name)}</strong></td>`;
                     
                     for(let d=1; d<=daysInMonth; d++) {
                         const dateKey = `${monthStr}-${d.toString().padStart(2, '0')}`;
                         const recordForDay = dayMap[dateKey];
                         
-                        let status = '-';
+                        let status = '-'; // Prorated / Not Joined correctly represented by '-'
                         if (recordForDay && recordForDay[lId]) {
                             const rec = recordForDay[lId];
                             status = rec.status;
-                            const dailyWage = rec.wage;
+                            const dailyWage = parseFloat(rec.wage ?? workerData.defaultWage ?? 0);
                             
-                            if (status === 'P') { totalDays += 1; totalWage += dailyWage; }
-                            else if (status === 'H') { totalDays += 0.5; totalWage += (dailyWage / 2); }
+                            // Edge Case Fix: Correctly calculate fractional days & wages securely
+                            if (status === 'P') { 
+                                totalDays += 1; 
+                                totalWage += dailyWage; 
+                            } else if (status === 'H') { 
+                                totalDays += 0.5; 
+                                totalWage += (dailyWage / 2); 
+                            }
                         }
                         
                         rowHTML += `<td><span class="status-badge ${status}">${status}</span></td>`;
                     }
                     
-                    rowHTML += `<td class="totals-col">${totalDays}</td><td class="totals-col">₹${totalWage.toLocaleString('en-IN')}</td>`;
+                    // Prevent floating point anomalies
+                    totalDays = Number(totalDays.toFixed(1));
+                    
+                    rowHTML += `<td class="totals-col">${totalDays}</td><td class="totals-col">₹${Number(totalWage).toLocaleString('en-IN', {minimumFractionDigits: 0, maximumFractionDigits: 2})}</td>`;
                     bodyHTML += `<tr>${rowHTML}</tr>`;
                 });
 
@@ -769,10 +792,63 @@
 
             } catch(e) {
                 console.error(e);
-                tbody.innerHTML = `<tr><td colspan="${daysInMonth + 3}" style="text-align:center; color:var(--danger-color);">Error generating report.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${daysInMonth + 3}" style="text-align:center; color:var(--danger-color); font-weight:600;">Error generating report. Please try again.</td></tr>`;
                 showToast("Error generating report", "error");
             }
         };
+
+        // --- EXPORT TO CSV FUNCTIONALITY ---
+        window.exportTableToCSV = function() {
+            vibrateApp(10);
+            const table = document.getElementById("reportTable");
+            if (!table || table.rows.length <= 1) {
+                showToast("No data to export", "error");
+                return;
+            }
+
+            let csv = [];
+            const rows = table.querySelectorAll("tr");
+            
+            for (let i = 0; i < rows.length; i++) {
+                let row = [];
+                const cols = rows[i].querySelectorAll("td, th");
+                
+                for (let j = 0; j < cols.length; j++) {
+                    let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, " ").replace(/"/g, '""');
+                    row.push('"' + data + '"');
+                }
+                csv.push(row.join(","));
+            }
+
+            const monthStr = document.getElementById('monthPicker').value;
+            const filename = `Attendance_Report_${monthStr}.csv`;
+            
+            const csvFile = new Blob([csv.join("\n")], { type: "text/csv" });
+            const downloadLink = document.createElement("a");
+            downloadLink.download = filename;
+            downloadLink.href = window.URL.createObjectURL(csvFile);
+            downloadLink.style.display = "none";
+            
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            
+            showToast("Exported successfully!");
+        };
+
+        // Safe HTML Escape for user inputs
+        function escapeHTML(str) {
+            if (!str) return "";
+            return str.replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag])
+            );
+        }
 
     </script>
 </body>
