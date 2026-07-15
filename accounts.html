@@ -707,6 +707,13 @@
                 const origBodyHeight = bodyEl.style.height;
                 const origBodyOverflow = bodyEl.style.overflow;
                 
+                // --- FIX FOR BLANK PAGE ADDED HERE ---
+                // Temporarily bring the element securely into the view boundaries for the render
+                const origElementLeft = element.style.left || '-9999px';
+                element.style.left = '0';
+                element.style.zIndex = '9999';
+                // -------------------------------------
+
                 htmlEl.style.height = 'auto'; htmlEl.style.overflow = 'visible';
                 bodyEl.style.height = 'auto'; bodyEl.style.overflow = 'visible';
                 
@@ -714,7 +721,8 @@
                     margin:       0.3,
                     filename:     `${filename}.pdf`,
                     image:        { type: 'jpeg', quality: 1 },
-                    html2canvas:  { scale: 2, useCORS: true, letterRendering: true, windowWidth: 1200 },
+                    // Added scrollX and scrollY 0 to ensure the viewport perfectly aligns with the element 
+                    html2canvas:  { scale: 2, useCORS: true, letterRendering: true, windowWidth: 1200, scrollX: 0, scrollY: 0 },
                     jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
                     pagebreak:    { mode: ['css', 'legacy'] }
                 };
@@ -723,6 +731,13 @@
                     // Restore original App UI constraints
                     htmlEl.style.height = origHtmlHeight; htmlEl.style.overflow = origHtmlOverflow;
                     bodyEl.style.height = origBodyHeight; bodyEl.style.overflow = origBodyOverflow;
+                    
+                    // --- FIX RESTORED HERE ---
+                    // Hide the element back into the void
+                    element.style.left = origElementLeft;
+                    element.style.zIndex = '-9999';
+                    // -------------------------
+
                     resolve(true);
                 });
             });
