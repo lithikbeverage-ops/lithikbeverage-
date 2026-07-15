@@ -505,11 +505,14 @@
             }
 
             try {
-                let q = collection(db, "expenses");
+                // FIXED: Using "expanse" collection as requested
+                let q = collection(db, "expanse");
                 
                 // Smart Filter Logic: Day precise grouping
                 if (filterDate !== '') {
-                    q = query(q, where("dateStr", "==", filterDate), orderBy("createdAt", "desc"));
+                    // FIXED: Removed the orderBy that was causing the Composite Index FAILED_PRECONDITION error.
+                    // We will fetch the docs for the date and sort them client-side instead.
+                    q = query(q, where("dateStr", "==", filterDate));
                 } else {
                     q = query(q, orderBy("createdAt", "desc"), isLoadMore && lastVisibleDoc ? startAfter(lastVisibleDoc) : limit(15));
                 }
@@ -538,7 +541,22 @@
                     }
                 });
                 
+                // Client-side sort to ensure newest records are at the top without breaking due to missing indexes
+                newItems.sort((a, b) => {
+                    const timeA = a.createdAt && a.createdAt.toDate ? a.createdAt.toDate().getTime() : 0;
+                    const timeB = b.createdAt && b.createdAt.toDate ? b.createdAt.toDate().getTime() : 0;
+                    return timeB - timeA;
+                });
+                
                 expenseCache.push(...newItems);
+                
+                // Sort the global cache too
+                expenseCache.sort((a, b) => {
+                    const timeA = a.createdAt && a.createdAt.toDate ? a.createdAt.toDate().getTime() : 0;
+                    const timeB = b.createdAt && b.createdAt.toDate ? b.createdAt.toDate().getTime() : 0;
+                    return timeB - timeA;
+                });
+
                 updateSummaryUI();
 
                 // Client-side search 
@@ -668,9 +686,9 @@
                 // We write the expense document AND update a master daily total document simultaneously.
                 await runTransaction(db, async (transaction) => {
                     
-                    // 1. Setup doc references
-                    const newExpenseRef = doc(collection(db, "expenses"));
-                    const statRef = doc(db, "expense_stats", dateStr); 
+                    // FIXED: Changed references to "expanse" and "expanse_stats" as instructed
+                    const newExpenseRef = doc(collection(db, "expanse"));
+                    const statRef = doc(db, "expanse_stats", dateStr); 
                     
                     // 2. Read existing stats (if any)
                     const statSnap = await transaction.get(statRef);
@@ -739,8 +757,9 @@
             try {
                 // Server Side Transaction to strictly reverse the operation
                 await runTransaction(db, async (transaction) => {
-                    const expenseRef = doc(db, "expenses", id);
-                    const statRef = doc(db, "expense_stats", dateStr);
+                    // FIXED: Changed references to "expanse" and "expanse_stats"
+                    const expenseRef = doc(db, "expanse", id);
+                    const statRef = doc(db, "expanse_stats", dateStr);
                     
                     const statSnap = await transaction.get(statRef);
                     
