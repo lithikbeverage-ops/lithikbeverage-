@@ -148,16 +148,16 @@
         
         .pdf-export-container {
             display: none; /* Hidden strictly until generation is triggered */
-            width: 210mm; 
+            width: 210mm; /* Strict A4 Width */
             background: white;
             color: #000;
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             box-sizing: border-box;
         }
 
-        /* --- EXACT SINGLE BILL 1-PAGE FIX --- */
+        /* EXACT SINGLE BILL 1-PAGE FIX */
         #printArea {
-            min-height: 296mm; /* Strictly lock to A4 height to prevent spillover */
+            min-height: 295mm; /* Safe zone: Slightly under 297mm to prevent rounding spillover */
             position: relative;
             padding-bottom: 260px; /* Leave space for absolute footers */
         }
@@ -216,7 +216,7 @@
         .print-absolute-footer p { margin: 0; font-size: 9px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px;}
 
         /* TABULAR REPORT EXACT LAYOUT (Auditor Ready) */
-        #reportPrintArea { padding-bottom: 40px; }
+        #reportPrintArea { padding-bottom: 40px; min-height: 295mm; }
         .rpt-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; padding-top: 20px;}
         .rpt-header h2 { margin: 0; font-size: 22px; font-weight: bold; text-transform: uppercase;}
         .rpt-header p { margin: 5px 0 0 0; font-size: 12px; color: #333;}
@@ -614,7 +614,6 @@
             if (globalBarChart) globalBarChart.destroy();
             if (globalPieChart) globalPieChart.destroy();
 
-            // Bar Chart (This vs Last Month)
             globalBarChart = new Chart(barCtx, {
                 type: 'bar',
                 data: {
@@ -627,7 +626,6 @@
                 options: { responsive: true, maintainAspectRatio: false }
             });
 
-            // Pie Chart (This Month Breakdown)
             globalPieChart = new Chart(pieCtx, {
                 type: 'doughnut',
                 data: {
@@ -645,6 +643,7 @@
         async function getSafeAggregate(colName, where1, where2, sumField) {
             const q = query(collection(db, colName), where1, where2);
             try {
+                // Highly optimized: 1 single read per query
                 const agg = await getAggregateFromServer(q, { total: sum(sumField) });
                 return agg.data().total || 0;
             } catch (err) {
@@ -698,21 +697,22 @@
             updateCharts(dThis, dLast);
         }
 
-        // --- BULLETPROOF PDF EXPORT ENGINE ---
+        // --- BULLETPROOF PDF EXPORT ENGINE (UI FIX) ---
         function executePdfDownload(elementId, filename) {
             return new Promise((resolve) => {
                 const element = document.getElementById(elementId);
                 const appShell = document.getElementById('app-shell');
-                const modals = document.querySelectorAll('.modal.active, .mini-modal-overlay.active');
                 
-                // CRITICAL FIX: Temporarily completely hide all app UI elements and force the print 
-                // container into the literal DOM flow so html2canvas renders it perfectly.
+                // Select all active modals safely
+                const activeModals = Array.from(document.querySelectorAll('.modal.active, .mini-modal-overlay.active'));
+                
+                // Hide UI strictly to let HTML2PDF grab only the print elements
                 appShell.style.display = 'none';
-                modals.forEach(m => m.style.display = 'none');
+                activeModals.forEach(m => m.style.display = 'none');
                 element.style.display = 'block';
 
                 const opt = {
-                    margin:       0, // Zero margin to ensure precise mapping to our custom CSS A4 bounds
+                    margin:       0,
                     filename:     `${filename}.pdf`,
                     image:        { type: 'jpeg', quality: 1 },
                     html2canvas:  { 
@@ -720,23 +720,24 @@
                         useCORS: true, 
                         letterRendering: true,
                         scrollY: 0, 
-                        windowWidth: 794 // Roughly 210mm in pixels to force A4 rendering logic
+                        windowWidth: 794 // Strictly locks canvas view rendering to exact A4 size limits
                     },
                     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
                     pagebreak:    { mode: ['css', 'legacy'] }
                 };
                 
                 html2pdf().set(opt).from(element).save().then(() => {
-                    // Instantly restore layout
-                    appShell.style.display = 'flex';
-                    modals.forEach(m => m.style.display = 'flex'); // Re-enable active modals
-                    element.style.display = 'none';
+                    // SUPER CRITICAL FIX: Emptying the display string removes the inline JS style 
+                    // and lets the browser reconstruct the UI via normal CSS, preventing all mobile overlaps!
+                    appShell.style.display = ''; 
+                    activeModals.forEach(m => m.style.display = ''); 
+                    element.style.display = ''; 
                     resolve(true);
                 }).catch(err => {
                     console.error("PDF Export Error:", err);
-                    appShell.style.display = 'flex';
-                    modals.forEach(m => m.style.display = 'flex');
-                    element.style.display = 'none';
+                    appShell.style.display = '';
+                    activeModals.forEach(m => m.style.display = '');
+                    element.style.display = '';
                     resolve(false);
                 });
             });
@@ -802,7 +803,9 @@
                 await executePdfDownload('printArea', `Invoice_${sale.invoiceNo}`);
                 
                 showToast("PDF Downloaded!", "success");
-                closeMiniModal('miniModalSingleBill');
+
+                // Cleanly auto-close the specific input modal once the PDF is sent to the client
+                setTimeout(() => closeMiniModal('miniModalSingleBill'), 300);
                 
             } catch(e) {
                 console.error(e);
@@ -837,7 +840,8 @@
 
                 if (type === 'Sales') {
                     title = `Sales Report (${sDate} to ${eDate})`;
-                    // Updated Header based on request
+                    
+                    // Fixed: Specifically utilizing "Customer Name" strictly for Sales filings
                     headers = ["Doc No", "Date", "Customer Name", "Taxable Base", "CGST", "SGST", "Grand Total"];
                     const startDt = new Date(sDate); startDt.setHours(0,0,0,0);
                     const endDt = new Date(eDate); endDt.setHours(23,59,59,999);
@@ -856,7 +860,8 @@
                 } 
                 else if (type === 'Purchases') {
                     title = `Purchases Report (${sDate} to ${eDate})`;
-                    // Standard header for Purchases
+                    
+                    // Fixed: Utilizing standard Supplier notation for Purchases
                     headers = ["Doc No", "Date", "Supplier Name", "Taxable Base", "CGST", "SGST", "Grand Total"];
                     const q = query(collection(db, "purchases"), where("date", ">=", sDate), where("date", "<=", eDate), orderBy("date", "asc"));
                     const snap = await getDocs(q);
@@ -891,6 +896,9 @@
                     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                     triggerDownload(blob, `${type}_Report_${sDate}_to_${eDate}.csv`);
                     showToast("Excel generated!", "success");
+                    
+                    // Elegantly return the user away from the export UI back to previous state
+                    setTimeout(() => { history.back(); }, 600);
                 } 
                 else if (format === 'JSON') {
                     let jsonObj = dataArray.map(row => {
@@ -901,6 +909,9 @@
                     const blob = new Blob([JSON.stringify(jsonObj, null, 2)], { type: 'application/json' });
                     triggerDownload(blob, `${type}_Report_${sDate}_to_${eDate}.json`);
                     showToast("JSON generated!", "success");
+                    
+                    // Elegantly return the user away from the export UI back to previous state
+                    setTimeout(() => { history.back(); }, 600);
                 }
                 else if (format === 'PDF') {
                     document.getElementById('rptTitle').innerText = title;
@@ -943,6 +954,9 @@
 
                     await executePdfDownload('reportPrintArea', `${type}_Report`);
                     showToast("PDF Downloaded!", "success");
+                    
+                    // Elegantly return the user away from the export UI back to previous state
+                    setTimeout(() => { history.back(); }, 600);
                 }
 
             } catch (err) {
