@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Expenses</title>
+    <!-- Tailwind CSS for Production-Ready UI -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
+
+    <!-- Navigation Bar -->
+    <nav class="bg-indigo-600 text-white shadow-lg">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="text-xl font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-wallet"></i> AppName
+                </div>
+                <div class="flex space-x-4 items-center">
+                    <a href="dashboard.html" class="hover:text-indigo-200 transition">Dashboard</a>
+                    <a href="expense.html" class="font-semibold border-b-2 border-white pb-1">Expenses</a>
+                    <button id="logout-btn" class="bg-indigo-700 hover:bg-indigo-800 px-4 py-2 rounded text-sm transition">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-4xl mx-auto w-full px-4 py-8">
+        
+        <!-- Date Toggle Header -->
+        <div class="bg-white rounded-xl shadow-sm p-4 mb-6 flex items-center justify-between border border-gray-100">
+            <button id="prev-day" class="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            
+            <div class="flex flex-col items-center">
+                <h2 class="text-sm text-gray-500 font-medium uppercase tracking-wider mb-1">Selected Date</h2>
+                <input type="date" id="date-picker" class="text-lg font-bold text-gray-800 bg-transparent border-none focus:ring-0 cursor-pointer">
+            </div>
+
+            <button id="next-day" class="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <!-- Add Expense Form -->
+            <div class="md:col-span-1">
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                    <h3 class="text-lg font-bold mb-4 text-gray-800">Add Expense</h3>
+                    <form id="add-expense-form" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                            <input type="text" id="expense-desc" required placeholder="e.g. Lunch, Taxi" 
+                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                            <select id="expense-category" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                                <option value="Food">Food & Dining</option>
+                                <option value="Transport">Transportation</option>
+                                <option value="Utilities">Utilities</option>
+                                <option value="Shopping">Shopping</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Amount ($)</label>
+                            <input type="number" id="expense-amount" required min="0.01" step="0.01" placeholder="0.00" 
+                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        </div>
+                        <button type="submit" id="submit-btn" class="w-full bg-indigo-600 text-white font-semibold py-2 rounded-lg hover:bg-indigo-700 transition flex justify-center items-center gap-2">
+                            <i class="fa-solid fa-plus"></i> Add to List
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Expense List & Total -->
+            <div class="md:col-span-2 flex flex-col">
+                <!-- Total Summary Card -->
+                <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-sm p-6 mb-6 text-white flex justify-between items-center">
+                    <div>
+                        <p class="text-indigo-100 text-sm font-medium">Total for <span id="display-date-text">today</span></p>
+                        <h2 class="text-3xl font-bold mt-1">$<span id="total-amount">0.00</span></h2>
+                    </div>
+                    <div class="bg-white/20 p-3 rounded-full">
+                        <i class="fa-solid fa-chart-pie text-2xl"></i>
+                    </div>
+                </div>
+
+                <!-- List Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 flex-grow flex flex-col overflow-hidden">
+                    <div class="p-4 border-b bg-gray-50 flex justify-between items-center">
+                        <h3 class="font-bold text-gray-800">Expense Breakdown</h3>
+                        <span id="item-count" class="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full font-medium">0 items</span>
+                    </div>
+                    
+                    <!-- Loading State -->
+                    <div id="loading-spinner" class="p-8 text-center text-gray-400">
+                        <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-2"></i>
+                        <p>Loading expenses...</p>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="empty-state" class="hidden p-8 text-center text-gray-400 flex-grow flex flex-col justify-center items-center">
+                        <i class="fa-solid fa-receipt text-4xl mb-3 text-gray-300"></i>
+                        <p>No expenses recorded for this date.</p>
+                    </div>
+
+                    <!-- Items Container -->
+                    <ul id="expense-list" class="hidden divide-y divide-gray-100 overflow-y-auto max-h-[400px]">
+                        <!-- Items injected by JS -->
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Firebase SDKs (Modular v9) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove, increment, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // TODO: Replace with your actual Firebase config
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // State Variables
+        let currentUser = null;
+        let currentDateString = getLocalYYYYMMDD(new Date());
+        let currentUnsubscribe = null; // To clear Firestore listeners on date change
+
+        // DOM Elements
+        const datePicker = document.getElementById('date-picker');
+        const prevDayBtn = document.getElementById('prev-day');
+        const nextDayBtn = document.getElementById('next-day');
+        const displayDateText = document.getElementById('display-date-text');
+        
+        const form = document.getElementById('add-expense-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const totalAmountEl = document.getElementById('total-amount');
+        const expenseListEl = document.getElementById('expense-list');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const emptyState = document.getElementById('empty-state');
+        const itemCountEl = document.getElementById('item-count');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        // --- AUTHENTICATION ---
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                initializeDateUI();
+                listenToExpenses(currentDateString);
+            } else {
+                window.location.href = "index.html"; // Redirect to login if not authenticated
+            }
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            signOut(auth).then(() => {
+                window.location.href = "index.html";
+            });
+        });
+
+        // --- DATE MANAGEMENT ---
+        function getLocalYYYYMMDD(date) {
+            const tzoffset = date.getTimezoneOffset() * 60000;
+            return (new Date(date - tzoffset)).toISOString().split('T')[0];
+        }
+
+        function initializeDateUI() {
+            datePicker.value = currentDateString;
+            
+            datePicker.addEventListener('change', (e) => {
+                changeDate(e.target.value);
+            });
+
+            prevDayBtn.addEventListener('click', () => {
+                const d = new Date(currentDateString);
+                d.setDate(d.getDate() - 1);
+                changeDate(getLocalYYYYMMDD(d));
+            });
+
+            nextDayBtn.addEventListener('click', () => {
+                const d = new Date(currentDateString);
+                d.setDate(d.getDate() + 1);
+                changeDate(getLocalYYYYMMDD(d));
+            });
+        }
+
+        function changeDate(newDateStr) {
+            currentDateString = newDateStr;
+            datePicker.value = newDateStr;
+            
+            // Format for display (e.g., "Oct 24, 2023")
+            const d = new Date(newDateStr + 'T00:00:00'); // Force local interpretation
+            const isToday = newDateStr === getLocalYYYYMMDD(new Date());
+            displayDateText.innerText = isToday ? "today" : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+
+            listenToExpenses(currentDateString);
+        }
+
+        // --- FIRESTORE LOGIC ---
+        function getDailyDocRef(dateStr) {
+            // One document per user per day. Example ID: "uid12345_2023-10-24"
+            const docId = `${currentUser.uid}_${dateStr}`;
+            return doc(db, 'expenses', docId);
+        }
+
+        function listenToExpenses(dateStr) {
+            // Show loading
+            loadingSpinner.classList.remove('hidden');
+            expenseListEl.classList.add('hidden');
+            emptyState.classList.add('hidden');
+
+            if (currentUnsubscribe) currentUnsubscribe(); // Unsubscribe from previous date
+
+            const docRef = getDailyDocRef(dateStr);
+            
+            // Real-time listener
+            currentUnsubscribe = onSnapshot(docRef, (docSnap) => {
+                loadingSpinner.classList.add('hidden');
+                
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const items = data.items || [];
+                    renderExpenses(items, data.totalAmount || 0);
+                } else {
+                    // Document doesn't exist yet for this day
+                    renderExpenses([], 0);
+                }
+            }, (error) => {
+                console.error("Error fetching expenses:", error);
+                alert("Failed to load expenses. Please try again.");
+            });
+        }
+
+        // --- ADD EXPENSE ---
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentUser) return;
+
+            const desc = document.getElementById('expense-desc').value;
+            const category = document.getElementById('expense-category').value;
+            const amount = parseFloat(document.getElementById('expense-amount').value);
+            
+            if (!desc || isNaN(amount)) return;
+
+            // Disable button to prevent double submission
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+            const newItem = {
+                id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
+                desc,
+                category,
+                amount,
+                timestamp: new Date().toISOString()
+            };
+
+            const docRef = getDailyDocRef(currentDateString);
+
+            try {
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    // Update existing doc: add item to array, increment total
+                    await updateDoc(docRef, {
+                        items: arrayUnion(newItem),
+                        totalAmount: increment(amount)
+                    });
+                } else {
+                    // Create new doc for this day
+                    await setDoc(docRef, {
+                        userId: currentUser.uid,
+                        date: currentDateString,
+                        items: [newItem],
+                        totalAmount: amount,
+                        createdAt: new Date().toISOString()
+                    });
+                }
+                form.reset();
+            } catch (error) {
+                console.error("Error adding expense:", error);
+                alert("Failed to save expense.");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fa-solid fa-plus"></i> Add to List';
+            }
+        });
+
+        // --- DELETE EXPENSE (Exposed globally for inline onClick) ---
+        window.deleteExpense = async function(itemId, amount) {
+            if (!confirm("Delete this expense?")) return;
+
+            const docRef = getDailyDocRef(currentDateString);
+            
+            try {
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const itemToRemove = data.items.find(item => item.id === itemId);
+                    
+                    if (itemToRemove) {
+                        await updateDoc(docRef, {
+                            items: arrayRemove(itemToRemove),
+                            totalAmount: increment(-amount)
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error("Error deleting expense:", error);
+                alert("Failed to delete expense.");
+            }
+        };
+
+        // --- UI RENDERING ---
+        function renderExpenses(items, total) {
+            totalAmountEl.innerText = total.toFixed(2);
+            itemCountEl.innerText = `${items.length} item${items.length !== 1 ? 's' : ''}`;
+
+            if (items.length === 0) {
+                emptyState.classList.remove('hidden');
+                expenseListEl.classList.add('hidden');
+                expenseListEl.innerHTML = '';
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            expenseListEl.classList.remove('hidden');
+            
+            // Sort items: newest first
+            const sortedItems = [...items].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            const categoryIcons = {
+                'Food': '<i class="fa-solid fa-utensils text-orange-500 bg-orange-100 p-2 rounded-lg"></i>',
+                'Transport': '<i class="fa-solid fa-car text-blue-500 bg-blue-100 p-2 rounded-lg"></i>',
+                'Utilities': '<i class="fa-solid fa-bolt text-yellow-500 bg-yellow-100 p-2 rounded-lg"></i>',
+                'Shopping': '<i class="fa-solid fa-bag-shopping text-pink-500 bg-pink-100 p-2 rounded-lg"></i>',
+                'Other': '<i class="fa-solid fa-tag text-gray-500 bg-gray-100 p-2 rounded-lg"></i>'
+            };
+
+            expenseListEl.innerHTML = sortedItems.map(item => `
+                <li class="p-4 hover:bg-gray-50 transition flex items-center justify-between group">
+                    <div class="flex items-center gap-4">
+                        ${categoryIcons[item.category] || categoryIcons['Other']}
+                        <div>
+                            <p class="font-semibold text-gray-800">${item.desc}</p>
+                            <p class="text-xs text-gray-400">${new Date(item.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="font-bold text-gray-800">$${item.amount.toFixed(2)}</span>
+                        <button onclick="deleteExpense('${item.id}', ${item.amount})" class="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition focus:opacity-100 p-1">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </li>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
