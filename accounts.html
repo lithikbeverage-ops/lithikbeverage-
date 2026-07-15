@@ -148,15 +148,20 @@
         
         .pdf-export-container {
             display: none; /* Hidden strictly until generation is triggered */
-            width: 210mm; /* Strict A4 Width */
+            width: 210mm; 
             background: white;
             color: #000;
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             box-sizing: border-box;
-            padding-bottom: 40px;
         }
 
-        /* SINGLE BILL EXACT LAYOUT inside PDF Container */
+        /* --- EXACT SINGLE BILL 1-PAGE FIX --- */
+        #printArea {
+            min-height: 296mm; /* Strictly lock to A4 height to prevent spillover */
+            position: relative;
+            padding-bottom: 260px; /* Leave space for absolute footers */
+        }
+
         .print-top-band { background-color: #f0f9ff; padding: 25px 40px; display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px; border-bottom: 3px solid #3b82f6; }
         .brand-logo-print { max-width: 70px; height: auto; border-radius: 8px; margin-bottom: 10px; display: block; }
         .print-header-left { flex: 1; padding-right: 15px; }
@@ -181,11 +186,12 @@
         .print-table th.text-right, .print-table td.text-right { text-align: right; padding-right: 15px; }
         .print-table th.text-center, .print-table td.text-center { text-align: center; }
         
-        /* Multi-page split fix logic based on sales.html */
+        /* Table Height Enforcement */
         .page-break { page-break-after: always; break-after: page; }
         .print-table tbody tr { page-break-inside: avoid; break-inside: avoid; height: 25mm !important; max-height: 25mm !important; overflow: hidden; }
         
-        .print-middle-section { display: flex; justify-content: space-between; padding: 15px 40px; margin-top: 30px; width: 100%; box-sizing: border-box; background-color: #fff; page-break-inside: avoid; break-inside: avoid; }
+        /* Absolute Footers for strict 1-Page Layouts */
+        #printArea .print-middle-section { display: flex; justify-content: space-between; padding: 15px 40px; background-color: #fff; position: absolute; bottom: 105px; left: 0; right: 0; width: 100%; box-sizing: border-box; }
         .print-left-footer-info { width: 45%; }
         .thanks-box { background-color: #f8fafc; padding: 15px; margin-bottom: 15px; border-left: 4px solid #1e40af; border-radius: 4px;} 
         .thanks-box strong { display: block; font-size: 13px; margin-bottom: 5px; color: #0f172a;}
@@ -201,15 +207,16 @@
         .totals-grid .t-grand-row { background-color: #f1f5f9; border-top: 2px solid #cbd5e1; border-bottom: 2px solid #cbd5e1;}
         .totals-grid .t-grand-row td { font-size: 16px; font-weight: 900; color: #1e40af; padding: 10px 15px 10px 10px; } 
         
-        .print-signature-area { display: flex; justify-content: space-between; padding: 0 40px; margin-top: 60px; width: 100%; box-sizing: border-box; background-color: #fff; page-break-inside: avoid; break-inside: avoid; }
+        #printArea .print-signature-area { display: flex; justify-content: space-between; padding: 0 40px; background-color: #fff; position: absolute; bottom: 35px; left: 0; right: 0; width: 100%; box-sizing: border-box; }
         .sign-box { text-align: center; width: 220px; }
         .sign-box div.sign-placeholder { border-bottom: 1px solid #000; height: 35px; margin-bottom: 8px; width: 100%; }
         .sign-box p { margin: 0; font-size: 11px; font-weight: bold; color: #000;}
         
-        .print-absolute-footer { background-color: #f1f5f9; padding: 12px 40px; display: flex; justify-content: center; align-items: center; margin-top: 40px; width: 100%; box-sizing: border-box; border-top: 1px solid #e2e8f0; page-break-inside: avoid; break-inside: avoid; }
+        #printArea .print-absolute-footer { background-color: #f1f5f9; padding: 12px 40px; display: flex; justify-content: center; align-items: center; border-top: 1px solid #e2e8f0; position: absolute; bottom: 0; left: 0; right: 0; width: 100%; box-sizing: border-box; }
         .print-absolute-footer p { margin: 0; font-size: 9px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px;}
 
         /* TABULAR REPORT EXACT LAYOUT (Auditor Ready) */
+        #reportPrintArea { padding-bottom: 40px; }
         .rpt-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; padding-top: 20px;}
         .rpt-header h2 { margin: 0; font-size: 22px; font-weight: bold; text-transform: uppercase;}
         .rpt-header p { margin: 5px 0 0 0; font-size: 12px; color: #333;}
@@ -699,13 +706,13 @@
                 const modals = document.querySelectorAll('.modal.active, .mini-modal-overlay.active');
                 
                 // CRITICAL FIX: Temporarily completely hide all app UI elements and force the print 
-                // container into the literal DOM flow so html2canvas renders it 100% perfectly.
+                // container into the literal DOM flow so html2canvas renders it perfectly.
                 appShell.style.display = 'none';
                 modals.forEach(m => m.style.display = 'none');
                 element.style.display = 'block';
 
                 const opt = {
-                    margin:       [0.1, 0, 0, 0], // Tiny top margin, CSS handles the rest
+                    margin:       0, // Zero margin to ensure precise mapping to our custom CSS A4 bounds
                     filename:     `${filename}.pdf`,
                     image:        { type: 'jpeg', quality: 1 },
                     html2canvas:  { 
@@ -715,7 +722,7 @@
                         scrollY: 0, 
                         windowWidth: 794 // Roughly 210mm in pixels to force A4 rendering logic
                     },
-                    jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
+                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
                     pagebreak:    { mode: ['css', 'legacy'] }
                 };
                 
@@ -825,11 +832,13 @@
             
             try {
                 let dataArray = [];
-                const headers = ["Doc No", "Date", "Party Name", "Taxable Base", "CGST", "SGST", "Grand Total"];
+                let headers = [];
                 let title = "";
 
                 if (type === 'Sales') {
                     title = `Sales Report (${sDate} to ${eDate})`;
+                    // Updated Header based on request
+                    headers = ["Doc No", "Date", "Customer Name", "Taxable Base", "CGST", "SGST", "Grand Total"];
                     const startDt = new Date(sDate); startDt.setHours(0,0,0,0);
                     const endDt = new Date(eDate); endDt.setHours(23,59,59,999);
                     
@@ -847,6 +856,8 @@
                 } 
                 else if (type === 'Purchases') {
                     title = `Purchases Report (${sDate} to ${eDate})`;
+                    // Standard header for Purchases
+                    headers = ["Doc No", "Date", "Supplier Name", "Taxable Base", "CGST", "SGST", "Grand Total"];
                     const q = query(collection(db, "purchases"), where("date", ">=", sDate), where("date", "<=", eDate), orderBy("date", "asc"));
                     const snap = await getDocs(q);
                     
@@ -906,7 +917,6 @@
                     let gBase = 0, gCGST = 0, gSGST = 0, gTotal = 0;
 
                     dataArray.forEach((row, rowIndex) => {
-                        // Multi-page Natural PDF breaks for lists exceeding 25 elements
                         let breakClass = (rowIndex > 0 && rowIndex % 25 === 0) ? 'class="page-break"' : '';
                         tbody += `<tr ${breakClass}>`;
                         row.forEach((col, i) => {
