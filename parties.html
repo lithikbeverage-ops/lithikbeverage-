@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Parties Directory - LITHIK BEVERAGE</title>
+    <title>Parties & Pending Files - LITHIK BEVERAGE</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
@@ -76,14 +76,9 @@
         .company-logo { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; box-shadow: var(--shadow-sm); }
         h1 { font-size: 1.2rem; font-weight: 800; letter-spacing: 0.5px; color: var(--primary-color); margin:0; text-transform: uppercase; }
         
-        /* Type Segment Filters */
+        /* Pending Filter Toggle */
         .filter-toggle { display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-muted); cursor: pointer; transition: all 0.2s; position: relative; }
-        .filter-toggle.active { background: rgba(30, 64, 175, 0.1); color: var(--primary-color); border-color: var(--primary-color); }
-        @media (prefers-color-scheme: dark) {
-            .filter-toggle.active { background: rgba(59, 130, 246, 0.15); color: var(--primary-color); }
-        }
-        .filter-badge { position: absolute; top: -4px; right: -4px; background: var(--danger-color); width: 10px; height: 10px; border-radius: 50%; display: none; }
-        .filter-toggle.active .filter-badge { display: block; }
+        .filter-toggle.active { background: rgba(239, 68, 68, 0.1); color: var(--danger-color); border-color: var(--danger-color); }
 
         .layout-container { display: flex; flex: 1; overflow: hidden; min-height: 0; }
         
@@ -111,39 +106,32 @@
         .btn-fab { background: var(--primary-color); color: white; border: none; width: 48px; height: 48px; border-radius: 12px; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: var(--shadow-md); transition: all 0.2s; flex-shrink: 0; }
         .btn-fab:active { transform: scale(0.95); }
 
-        /* Quick Type Select Bar */
-        .segmented-control { display: flex; background: var(--input-bg); padding: 4px; border-radius: 10px; margin-bottom: 20px; gap: 4px; border: 1px solid var(--border-color); }
-        .segment-btn { flex: 1; border: none; background: transparent; padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: all 0.2s; text-align: center; }
-        .segment-btn.active { background: var(--bg-surface); color: var(--primary-color); box-shadow: var(--shadow-sm); }
-
-        /* Parties Grid & Cards */
-        .parties-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
-        .party-card { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; box-shadow: var(--shadow-sm); transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; gap: 14px; position: relative; }
+        /* Party List Cards */
+        .party-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+        .party-card { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; box-shadow: var(--shadow-sm); transition: transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 14px; }
         .party-card:hover { box-shadow: var(--shadow-md); }
         
         .party-header { display: flex; justify-content: space-between; align-items: flex-start; }
         .party-info { flex: 1; padding-right: 12px; }
-        .party-title { font-weight: 800; font-size: 1.15rem; color: var(--text-main); line-height: 1.3; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+        .party-type-badge { display: inline-block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; padding: 3px 8px; border-radius: 6px; margin-bottom: 8px; }
+        .badge-customer { background: rgba(14, 165, 233, 0.1); color: var(--accent-color); border: 1px solid rgba(14, 165, 233, 0.2); }
+        .badge-supplier { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.2); }
+
+        .party-name { font-weight: 800; font-size: 1.15rem; color: var(--text-main); line-height: 1.3; margin-bottom: 4px; }
+        .party-meta { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; display: flex; align-items: center; gap: 6px; margin-bottom: 4px;}
+        .party-meta .material-symbols-outlined { font-size: 16px; }
         
-        .party-badge { font-size: 0.65rem; text-transform: uppercase; font-weight: 800; padding: 4px 8px; border-radius: 6px; letter-spacing: 0.5px; display: inline-block; }
-        .party-badge.customer { background: rgba(59, 130, 246, 0.1); color: var(--primary-color); }
-        .party-badge.supplier { background: rgba(16, 185, 129, 0.1); color: var(--success-color); }
+        .party-balance-box { text-align: right; min-width: 90px; display: flex; flex-direction: column; align-items: flex-end; background: var(--input-bg); padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border-color); }
+        .party-bal-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 700; margin-bottom: 4px; }
+        .party-bal-val { font-size: 1.25rem; font-weight: 800; color: var(--success-color); line-height: 1; }
+        .party-bal-val.pending { color: var(--danger-color); }
+        .party-bill-no { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; margin-top: 6px; letter-spacing: 0.5px; }
         
-        .party-meta { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
-        .party-meta div { display: flex; align-items: center; gap: 6px; }
-        .party-meta .material-symbols-outlined { font-size: 16px; color: var(--text-muted); }
-        
-        .party-balance-box { text-align: right; min-width: 90px; display: flex; flex-direction: column; align-items: flex-end; }
-        .party-balance-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 700; margin-bottom: 2px; }
-        .party-balance-val { font-size: 1.3rem; font-weight: 800; color: var(--text-main); line-height: 1.1; }
-        .party-balance-val.receivable { color: var(--success-color); }
-        .party-balance-val.payable { color: var(--danger-color); }
-        
-        .party-footer { display: flex; justify-content: flex-end; align-items: center; border-top: 1px solid var(--border-color); padding-top: 12px; gap: 10px; }
-        
-        .btn-card-action { background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-muted); width: 38px; height: 38px; border-radius: 8px; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: all 0.2s; text-decoration: none; }
+        .party-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 4px; }
+        .action-group { display: flex; gap: 10px; }
+        .btn-card-action { background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-muted); width: 36px; height: 36px; border-radius: 8px; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: all 0.2s; text-decoration: none; }
         .btn-card-action:active { transform: scale(0.9); }
-        .btn-call { color: var(--success-color); background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2); }
+        .btn-call { color: var(--success-color); background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2); width: auto; padding: 0 16px; gap: 6px; font-weight: 700; font-size: 0.9rem;}
         .btn-edit { color: var(--accent-color); background: rgba(14, 165, 233, 0.1); border-color: rgba(14, 165, 233, 0.2); }
         .btn-delete { color: var(--danger-color); background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); }
 
@@ -151,14 +139,14 @@
         .skeleton { background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-shine) 50%, var(--skeleton-base) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-        /* Modals Structure */
+        /* Modals */
         .modal { position: fixed; top: 0; right: -100%; width: 100%; height: 100%; background-color: var(--bg-body); z-index: 2000; transition: right 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); overflow-y: auto; padding-bottom: 80px; }
         .modal.active { right: 0; }
         .modal-header { display: flex; align-items: center; gap: 15px; padding: 18px 20px; background: var(--bg-surface); position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--border-color); justify-content: space-between;}
         .close-modal { background: none; border: none; color: var(--text-main); cursor: pointer; display: flex; padding: 8px; border-radius: 50%; margin-left: -8px; }
         .modal-header h2 { margin: 0; font-size: 1.25em; font-weight: 700; }
 
-        /* Mini Confirmation Overlays */
+        /* Mini Popup Modals */
         .mini-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(15, 23, 42, 0.6); z-index: 4000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; backdrop-filter: blur(4px); }
         .mini-modal-overlay.active { opacity: 1; pointer-events: auto; }
         .mini-modal-content { background: var(--bg-surface); width: 92%; max-width: 400px; border-radius: 24px; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); transform: scale(0.95); transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid var(--border-color); }
@@ -189,7 +177,7 @@
             .layout-container { flex-direction: row; }
             nav.bottom-nav { display: none; }
             nav.sidebar { display: flex; }
-            .parties-grid { grid-template-columns: 1fr 1fr; }
+            .party-grid { grid-template-columns: 1fr 1fr; }
         }
     </style>
 </head>
@@ -205,9 +193,8 @@
                 <h1>PARTIES</h1>
             </div>
             <div class="header-right">
-                <div class="filter-toggle" id="btnBalanceFilter" onclick="vibrateApp(10); toggleBalanceFilter()" title="Show Outstanding Balance Only">
-                    <span class="material-symbols-outlined">account_balance_wallet</span>
-                    <div class="filter-badge"></div>
+                <div class="filter-toggle" id="btnPendingFilter" onclick="vibrateApp(10); togglePendingFilter()" title="Pending Files Filter">
+                    <span class="material-symbols-outlined">assignment_late</span>
                 </div>
             </div>
         </header>
@@ -221,20 +208,16 @@
                     <div class="top-actions">
                         <div class="search-container">
                             <span class="material-symbols-outlined">search</span>
-                            <input type="text" id="searchInput" placeholder="Search customer or supplier..." autocomplete="off">
+                            <input type="text" id="searchInput" placeholder="Search Party, Bill No..." autocomplete="off">
                         </div>
-                        <button class="btn-fab" onclick="openPartyModal()" title="Add New Party">
+                        <button class="btn-fab" onclick="openPartyModal()" title="Add Party/Pending File">
                             <span class="material-symbols-outlined">person_add</span>
                         </button>
                     </div>
 
-                    <div class="segmented-control">
-                        <button class="segment-btn active" id="segAll" onclick="vibrateApp(10); changeTypeSegment('ALL')">All Profiles</button>
-                        <button class="segment-btn" id="segCustomers" onclick="vibrateApp(10); changeTypeSegment('Customer')">Customers</button>
-                        <button class="segment-btn" id="segSuppliers" onclick="vibrateApp(10); changeTypeSegment('Supplier')">Suppliers</button>
+                    <div class="party-grid" id="partyGrid">
+                        <!-- Cards injected via JS -->
                     </div>
-
-                    <div class="parties-grid" id="partiesGrid"></div>
                     
                     <div id="scrollLoader">
                         <span class="skeleton" style="width:16px; height:16px; border-radius:50%;"></span> Loading parties...
@@ -246,12 +229,12 @@
         <nav class="bottom-nav" id="mobile-nav"></nav>
     </div>
 
-    <!-- Add / Edit Party Modal -->
+    <!-- ADD/EDIT PARTY MODAL -->
     <div class="modal" id="modalParty">
         <div class="modal-header">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <button class="close-modal" onclick="history.back()"><span class="material-symbols-outlined">arrow_back</span></button>
-                <h2 id="modalPartyTitle">Add New Party</h2>
+                <h2 id="modalPartyTitle">Add Party</h2>
             </div>
         </div>
         
@@ -260,49 +243,60 @@
             
             <div class="input-wrapper">
                 <label>Party / Company Name *</label>
-                <input type="text" id="partyName" placeholder="e.g. Balaji Beverages or John Doe">
-            </div>
-
-            <div class="input-wrapper">
-                <label>Party Profile Type *</label>
-                <select id="partyType">
-                    <option value="Customer">Customer (Client / Retailer)</option>
-                    <option value="Supplier">Supplier (Vendor / Raw Material)</option>
-                </select>
+                <input type="text" id="pName" placeholder="e.g. Justin Mason">
             </div>
             
             <div class="row-inputs">
                 <div class="input-wrapper">
                     <label>Phone Number *</label>
-                    <input type="tel" id="partyPhone" placeholder="10-digit Mobile No">
+                    <input type="tel" id="pPhone" placeholder="Mobile / Landline">
                 </div>
                 <div class="input-wrapper">
-                    <label>Opening Balance (₹)</label>
-                    <input type="number" id="partyOpeningBalance" placeholder="0" value="0">
+                    <label>Party Type *</label>
+                    <select id="pType">
+                        <option value="Customer">Customer</option>
+                        <option value="Supplier">Supplier / Vendor</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Professional Pending File details -->
+            <div style="background: var(--bg-surface); border: 1px dashed var(--border-color); padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                <label style="display: block; font-weight: 700; color: var(--text-main); margin-bottom: 12px; font-size: 0.9em;">Pending File / Billing Info</label>
+                
+                <div class="row-inputs">
+                    <div class="input-wrapper" style="margin-bottom: 0;">
+                        <label>Ref / Bill Number</label>
+                        <input type="text" id="pBillNo" placeholder="e.g. INV-0012">
+                    </div>
+                    <div class="input-wrapper" style="margin-bottom: 0;">
+                        <label>Pending Balance (₹)</label>
+                        <input type="number" id="pBalance" placeholder="0" min="0">
+                    </div>
                 </div>
             </div>
 
             <div class="input-wrapper">
-                <label>Billing / Shipping Address</label>
-                <input type="text" id="partyAddress" placeholder="Enter Full Location Details">
+                <label>Address / Location</label>
+                <input type="text" id="pAddress" placeholder="Full Address">
             </div>
 
             <button type="button" class="btn-primary" id="btnSaveParty" style="margin-top: 20px;">
                 <span class="material-symbols-outlined">save</span>
-                Save Party Profile
+                Save Party
             </button>
         </div>
     </div>
 
-    <!-- Delete Confirmation Mini Modal -->
+    <!-- DELETE CONFIRMATION MODAL -->
     <div class="mini-modal-overlay" id="miniModalDelete">
         <div class="mini-modal-content">
             <div style="text-align: center;">
                 <div style="width: 64px; height: 64px; background: rgba(239, 68, 68, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto;">
                     <span class="material-symbols-outlined" style="font-size: 32px; color: var(--danger-color);">delete_forever</span>
                 </div>
-                <h3 style="margin-bottom: 8px; font-size: 1.25rem; color: var(--text-main); font-weight: 700;">Delete Profile?</h3>
-                <p style="color: var(--text-muted); margin-bottom: 24px; font-size: 0.95rem; line-height: 1.5;">Are you sure? This will permanently remove this party record from all collection indices.</p>
+                <h3 style="margin-bottom: 8px; font-size: 1.25rem; color: var(--text-main); font-weight: 700;">Delete Party?</h3>
+                <p style="color: var(--text-muted); margin-bottom: 24px; font-size: 0.95rem; line-height: 1.5;">Are you sure? This will permanently remove this party and their pending file details.</p>
                 <input type="hidden" id="deleteTargetId">
                 <div style="display: flex; gap: 12px;">
                     <button type="button" onclick="closeMiniModal('miniModalDelete')" style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main); font-weight: 600; cursor: pointer; transition: all 0.2s;">Cancel</button>
@@ -317,7 +311,7 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
         import { collection, doc, getDocs, query, orderBy, limit, startAfter, where, setDoc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
-        // Navigation Layout Architecture Map
+        // Exact Navigation Setup
         const navItems = [
             { name: 'Dashboard', path: 'index.html', icon: '<path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>' },
             { name: 'Billing', path: 'bill.html', icon: '<path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/>' },
@@ -337,15 +331,19 @@
 
         navItems.forEach(item => {
             const isActive = currentPath === item.path ? 'active' : '';
-            const html = `<a href="${item.path}" class="nav-item ${isActive}"><svg class="nav-icon" viewBox="0 0 24 24">${item.icon}</svg><span>${item.name}</span></a>`;
+            const html = `
+                <a href="${item.path}" class="nav-item ${isActive}">
+                    <svg class="nav-icon" viewBox="0 0 24 24">${item.icon}</svg>
+                    <span>${item.name}</span>
+                </a>
+            `;
             desktopNav.innerHTML += html;
             mobileNav.innerHTML += html;
         });
 
-        // Haptic Feedback Engine Simulation
+        // Utilities
         window.vibrateApp = function(pattern) { if (navigator.vibrate) navigator.vibrate(pattern); };
         
-        // System Notification Toasts
         window.showToast = function(msg, type = "success") {
             vibrateApp(type === "error" ? 40 : 20);
             const toast = document.getElementById(type === "error" ? 'errorToast' : 'successToast');
@@ -358,7 +356,9 @@
             }, 3000);
         };
 
-        // Modal Stack Operations
+        const formatCurrency = (val) => Number(val).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+        // Modal Logic
         window.openModal = function(modalId) {
             vibrateApp(20);
             document.getElementById(modalId).classList.add('active');
@@ -373,7 +373,6 @@
         window.openMiniModal = function(id) { vibrateApp(20); document.getElementById(id).classList.add('active'); };
         window.closeMiniModal = function(id) { document.getElementById(id).classList.remove('active'); };
 
-        // Search Token Generator For Indexed Search Filters
         function generateSearchTokens(str1, str2) {
             const combined = `${str1 || ''} ${str2 || ''}`.toLowerCase().replace(/[.\/\\~*\[\]]/g, ' ');
             const words = combined.split(/[\s\-_]+/).filter(w => w.trim().length > 0);
@@ -388,40 +387,30 @@
             return tokens;
         }
 
-        // Operational State Machines
+        // Global Variables
         let currentUser = null;
-        let partiesCache = [];
+        let partyCache = [];
         let lastVisibleDoc = null;
         let isFetching = false;
         let hasMore = true;
         let currentSearch = '';
-        let currentSegment = 'ALL'; // ALL | Customer | Supplier
-        let isBalanceFilter = false;
+        let isPendingFilter = false;
 
-        // Balance Quick Toggle Filter Logic
-        window.toggleBalanceFilter = function() {
-            const btn = document.getElementById('btnBalanceFilter');
-            isBalanceFilter = !isBalanceFilter;
-            if(isBalanceFilter) {
+        // Filter Logic
+        window.togglePendingFilter = function() {
+            const btn = document.getElementById('btnPendingFilter');
+            isPendingFilter = !isPendingFilter;
+            if(isPendingFilter) {
                 btn.classList.add('active');
             } else {
                 btn.classList.remove('active');
             }
+            document.getElementById('searchInput').value = '';
+            currentSearch = '';
             loadParties(false);
         };
 
-        // Segment Switch Engine
-        window.changeTypeSegment = function(segment) {
-            document.querySelectorAll('.segment-btn').forEach(btn => btn.classList.remove('active'));
-            if(segment === 'ALL') document.getElementById('segAll').classList.add('active');
-            if(segment === 'Customer') document.getElementById('segCustomers').classList.add('active');
-            if(segment === 'Supplier') document.getElementById('segSuppliers').classList.add('active');
-            
-            currentSegment = segment;
-            loadParties(false);
-        };
-
-        // Authentication Core Pipeline
+        // Auth
         const auth = getAuth(app);
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -432,85 +421,95 @@
             }
         });
 
-        // Initialize Form Modal Operations
+        // Add/Edit Party Logic
         window.openPartyModal = function(id = null) {
             if (id) {
-                const item = partiesCache.find(p => p.id === id);
+                // Edit
+                const item = partyCache.find(i => i.id === id);
                 if(!item) return;
-                document.getElementById('modalPartyTitle').innerText = "Edit Party Profile";
+                document.getElementById('modalPartyTitle').innerText = "Edit Party Details";
                 document.getElementById('editPartyId').value = id;
-                document.getElementById('partyName').value = item.name || '';
-                document.getElementById('partyType').value = item.partyType || 'Customer';
-                document.getElementById('partyPhone').value = item.phone || '';
-                document.getElementById('partyOpeningBalance').value = item.openingBalance || 0;
-                document.getElementById('partyAddress').value = item.address || '';
+                document.getElementById('pName').value = item.name;
+                document.getElementById('pPhone').value = item.phone || '';
+                document.getElementById('pType').value = item.type || 'Customer';
+                document.getElementById('pBillNo').value = item.pendingBillNo || '';
+                document.getElementById('pBalance').value = item.balance || 0;
+                document.getElementById('pAddress').value = item.address || '';
             } else {
-                document.getElementById('modalPartyTitle').innerText = "Add New Party";
+                // New
+                document.getElementById('modalPartyTitle').innerText = "Add Party";
                 document.getElementById('editPartyId').value = '';
-                document.getElementById('partyName').value = '';
-                document.getElementById('partyType').value = 'Customer';
-                document.getElementById('partyPhone').value = '';
-                document.getElementById('partyOpeningBalance').value = '0';
-                document.getElementById('partyAddress').value = '';
+                document.getElementById('pName').value = '';
+                document.getElementById('pPhone').value = '';
+                document.getElementById('pType').value = 'Customer';
+                document.getElementById('pBillNo').value = '';
+                document.getElementById('pBalance').value = '';
+                document.getElementById('pAddress').value = '';
             }
             openModal('modalParty');
         };
 
-        // Save / Update Operation Trigger
         document.getElementById('btnSaveParty').addEventListener('click', async () => {
             vibrateApp(30);
             const id = document.getElementById('editPartyId').value;
-            const name = document.getElementById('partyName').value.trim();
-            const partyType = document.getElementById('partyType').value;
-            const phone = document.getElementById('partyPhone').value.trim();
-            const openingBalance = parseFloat(document.getElementById('partyOpeningBalance').value) || 0;
-            const address = document.getElementById('partyAddress').value.trim();
+            const name = document.getElementById('pName').value.trim();
+            const phone = document.getElementById('pPhone').value.trim();
+            const type = document.getElementById('pType').value;
+            const pendingBillNo = document.getElementById('pBillNo').value.trim();
+            const balance = parseFloat(document.getElementById('pBalance').value) || 0;
+            const address = document.getElementById('pAddress').value.trim();
 
-            if (!name || !phone || phone.length < 10) {
-                showToast("Name and valid Phone are required.", "error"); return;
+            if (!name || !phone) {
+                showToast("Name and Phone Number are required.", "error"); return;
             }
 
             const btn = document.getElementById('btnSaveParty');
-            btn.disabled = true; btn.innerHTML = "Processing...";
+            btn.disabled = true; btn.innerHTML = "Saving...";
 
             try {
                 const payload = {
                     name,
-                    partyType,
                     phone,
-                    openingBalance,
+                    type,
+                    pendingBillNo,
+                    balance,
                     address,
-                    searchTokens: generateSearchTokens(name, phone),
+                    searchTokens: generateSearchTokens(name, pendingBillNo),
                     lastUpdated: new Date().toISOString()
                 };
 
                 if (id) {
+                    // Update
                     const docRef = doc(db, "parties", id);
                     await updateDoc(docRef, payload);
-                    showToast("Party configuration updated!", "success");
+                    showToast("Party updated!", "success");
                 } else {
-                    payload.currentBalance = openingBalance; // Initialize working balance tracking parameter
+                    // Create New
                     payload.createdAt = serverTimestamp();
-                    payload.createdBy = currentUser.displayName || "Operator";
+                    payload.createdBy = currentUser.displayName || "Admin";
                     
                     const docRef = doc(collection(db, "parties"));
                     await setDoc(docRef, payload);
-                    showToast("New Party profile registered!", "success");
+                    showToast("New Party added!", "success");
                 }
                 
-                history.back();
-                loadParties(false);
+                history.back(); // Close modal
+                
+                // Refresh list
+                currentSearch = '';
+                document.getElementById('searchInput').value = '';
+                loadParties();
                 
             } catch(err) {
                 console.error(err);
-                showToast("Database synchronization failed", "error");
+                showToast("Failed to save party details", "error");
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = `<span class="material-symbols-outlined">save</span> Save Party Profile`;
+                btn.innerHTML = `<span class="material-symbols-outlined">save</span> Save Party`;
             }
         });
 
-        // Delete Command Chain
+        // Delete Logic
         window.confirmDeleteParty = function(id) {
             vibrateApp(20);
             document.getElementById('deleteTargetId').value = id;
@@ -527,38 +526,37 @@
 
             try {
                 await deleteDoc(doc(db, "parties", id));
-                showToast("Party profile deleted permanently.", "success");
+                showToast("Party deleted successfully!", "success");
                 closeMiniModal('miniModalDelete');
-                loadParties(false); 
+                loadParties(); 
             } catch(err) {
                 console.error(err);
-                showToast("Deletions restricted or failed", "error");
+                showToast("Failed to delete party", "error");
             } finally {
                 btn.disabled = false; btn.innerText = "Delete";
             }
         };
 
-        // Skeleton Shimmer Loading UI
+        // --- Fetch & Render Logic ---
         function renderSkeletons() {
-            const grid = document.getElementById('partiesGrid');
+            const grid = document.getElementById('partyGrid');
             let html = '';
-            for(let i=0; i<4; i++) {
+            for(let i=0; i<6; i++) {
                 html += `
                 <div class="party-card" style="border-color: transparent; box-shadow: none;">
                     <div style="display:flex; justify-content:space-between;">
                         <div style="flex:1;">
-                            <div class="skeleton" style="height:22px; width:65%; margin-bottom:12px; border-radius:4px;"></div>
-                            <div class="skeleton" style="height:14px; width:45%; margin-bottom:6px; border-radius:4px;"></div>
-                            <div class="skeleton" style="height:14px; width:35%; border-radius:4px;"></div>
+                            <div class="skeleton" style="height:14px; width:30%; margin-bottom:8px; border-radius:4px;"></div>
+                            <div class="skeleton" style="height:20px; width:70%; margin-bottom:12px; border-radius:4px;"></div>
+                            <div class="skeleton" style="height:14px; width:40%; border-radius:4px;"></div>
                         </div>
-                        <div class="skeleton" style="height:35px; width:80px; border-radius:8px;"></div>
+                        <div class="skeleton" style="height:50px; width:90px; border-radius:12px;"></div>
                     </div>
                 </div>`;
             }
             grid.innerHTML = html;
         }
 
-        // Data Fetching and Compiling Pipeline
         async function loadParties(isLoadMore = false) {
             if (isLoadMore) {
                 if (isFetching || !hasMore) return;
@@ -567,7 +565,7 @@
             } else {
                 hasMore = true;
                 lastVisibleDoc = null;
-                partiesCache = [];
+                partyCache = [];
                 isFetching = true;
                 renderSkeletons();
             }
@@ -575,17 +573,12 @@
             try {
                 let q = collection(db, "parties");
                 
-                // 1. Core Segment Type Filtering
-                if (currentSegment !== 'ALL') {
-                    q = query(q, where("partyType", "==", currentSegment));
+                // Filter: Only show parties with an outstanding balance > 0
+                if (isPendingFilter) {
+                    q = query(q, where("balance", ">", 0)); 
                 }
                 
-                // 2. Outstanding Balance Condition Filter
-                if (isBalanceFilter) {
-                    q = query(q, where("currentBalance", "!=", 0));
-                }
-                
-                // 3. Token-Based Multi-Word Search Engine Integration
+                // Search
                 if (currentSearch !== '') {
                     const searchWords = currentSearch.replace(/[.\/\\~*\[\]]/g, ' ').split(/[\s\-_]+/).filter(w => w.trim().length > 0);
                     searchWords.forEach(word => {
@@ -593,120 +586,116 @@
                     });
                 }
                 
-                // 4. Deterministic Index Order & Cursor Pagination Rules
-                if (currentSearch !== '' || isBalanceFilter || currentSegment !== 'ALL') {
-                    q = query(q, isLoadMore && lastVisibleDoc ? startAfter(lastVisibleDoc) : limit(10));
+                // Sorting & Pagination
+                if (lastVisibleDoc) {
+                    q = query(q, orderBy("createdAt", "desc"), startAfter(lastVisibleDoc), limit(15));
                 } else {
-                    q = query(q, orderBy("createdAt", "desc"), isLoadMore && lastVisibleDoc ? startAfter(lastVisibleDoc) : limit(10));
+                    q = query(q, orderBy("createdAt", "desc"), limit(15));
                 }
 
                 const snap = await getDocs(q);
                 
                 if (snap.empty) {
                     hasMore = false;
-                    if (!isLoadMore) document.getElementById('partiesGrid').innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:40px; font-weight:500;">No matching parties profiles found.</div>';
-                    document.getElementById('scrollLoader').style.display = 'none';
-                    isFetching = false;
-                    return;
+                    if (!isLoadMore) {
+                        document.getElementById('partyGrid').innerHTML = `
+                            <div style="text-align:center; padding: 40px 20px; color:var(--text-muted);">
+                                <span class="material-symbols-outlined" style="font-size: 48px; opacity: 0.3; margin-bottom: 10px;">groups</span>
+                                <h3>No Parties Found</h3>
+                                <p style="font-size: 0.9em; margin-top: 5px;">Add a new client/vendor to manage their pending files.</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    lastVisibleDoc = snap.docs[snap.docs.length - 1];
+                    if (snap.docs.length < 15) hasMore = false;
+
+                    const newItems = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    if (!isLoadMore) {
+                        partyCache = newItems;
+                        document.getElementById('partyGrid').innerHTML = '';
+                    } else {
+                        partyCache = [...partyCache, ...newItems];
+                    }
+
+                    renderCards(newItems);
                 }
 
-                lastVisibleDoc = snap.docs[snap.docs.length - 1];
-                const newItems = [];
-                snap.forEach(docSnap => {
-                    const data = { id: docSnap.id, ...docSnap.data() };
-                    if(!partiesCache.find(p => p.id === docSnap.id)) {
-                        newItems.push(data);
-                        partiesCache.push(data);
-                    }
-                });
-
-                if (isLoadMore) renderPartiesAppend(newItems);
-                else renderParties(newItems);
-                
-                document.getElementById('scrollLoader').style.display = 'none';
-
-            } catch (err) {
-                console.error(err);
-                showToast("Data indexing configuration error.", "error");
+            } catch (error) {
+                console.error("Error loading parties:", error);
+                if (!isLoadMore) document.getElementById('partyGrid').innerHTML = '<div style="padding:20px; color:var(--danger-color); text-align:center;">Failed to load data.</div>';
             } finally {
                 isFetching = false;
+                document.getElementById('scrollLoader').style.display = 'none';
             }
         }
 
-        // Render Cards View Engines
-        function renderParties(items) {
-            const grid = document.getElementById('partiesGrid');
-            grid.innerHTML = '';
-            items.forEach(item => grid.innerHTML += generatePartyCardHTML(item));
-        }
-
-        function renderPartiesAppend(items) {
-            const grid = document.getElementById('partiesGrid');
-            items.forEach(item => grid.innerHTML += generatePartyCardHTML(item));
-        }
-
-        function generatePartyCardHTML(item) {
-            const badgeType = (item.partyType || 'Customer').toLowerCase();
-            const bal = item.currentBalance || 0;
+        function renderCards(items) {
+            const grid = document.getElementById('partyGrid');
             
-            let balanceClass = "";
-            let balanceLabel = "Settled";
-            if (bal > 0) {
-                balanceClass = "receivable";
-                balanceLabel = badgeType === 'customer' ? "Receivable" : "Advance Given";
-            } else if (bal < 0) {
-                balanceClass = "payable";
-                balanceLabel = badgeType === 'customer' ? "Advance Taken" : "Payable Due";
-            }
+            items.forEach(item => {
+                const badgeClass = item.type === 'Supplier' ? 'badge-supplier' : 'badge-customer';
+                const balClass = item.balance > 0 ? 'pending' : '';
+                const formatBal = item.balance > 0 ? `₹${formatCurrency(item.balance)}` : 'NIL';
+                
+                // Only Direct Call Button Included
+                const callBtn = item.phone ? 
+                    `<a href="tel:${item.phone}" class="btn-card-action btn-call" title="Call ${item.name}">
+                        <span class="material-symbols-outlined" style="font-size: 20px;">call</span> Call
+                    </a>` : '';
 
-            return `
-                <div class="party-card">
-                    <div class="party-header">
-                        <div class="party-info">
-                            <div class="party-title">
-                                ${item.name}
+                const html = `
+                    <div class="party-card">
+                        <div class="party-header">
+                            <div class="party-info">
+                                <span class="party-type-badge ${badgeClass}">${item.type || 'Customer'}</span>
+                                <div class="party-name">${item.name}</div>
+                                <div class="party-meta"><span class="material-symbols-outlined">call</span> ${item.phone || 'No Phone'}</div>
+                                ${item.address ? `<div class="party-meta"><span class="material-symbols-outlined">location_on</span> ${item.address}</div>` : ''}
                             </div>
-                            <span class="party-badge ${badgeType}">${item.partyType || 'Customer'}</span>
-                            <div class="party-meta">
-                                <div><span class="material-symbols-outlined">call</span>${item.phone || 'N/A'}</div>
-                                <div><span class="material-symbols-outlined">location_on</span>${item.address || 'No Address Provided'}</div>
+                            
+                            <div class="party-balance-box">
+                                <div class="party-bal-label">Balance Due</div>
+                                <div class="party-bal-val ${balClass}">${formatBal}</div>
+                                ${item.pendingBillNo ? `<div class="party-bill-no">Ref: ${item.pendingBillNo}</div>` : ''}
                             </div>
                         </div>
-                        <div class="party-balance-box">
-                            <span class="party-balance-label">${balanceLabel}</span>
-                            <span class="party-balance-val ${balanceClass}">₹${Math.abs(bal).toLocaleString('en-IN', {minimumFractionDigits:2})}</span>
+
+                        <div class="party-footer">
+                            <div class="action-group">
+                                ${callBtn}
+                            </div>
+                            <div class="action-group">
+                                <button class="btn-card-action btn-edit" onclick="openPartyModal('${item.id}')" title="Edit">
+                                    <span class="material-symbols-outlined" style="font-size: 20px;">edit</span>
+                                </button>
+                                <button class="btn-card-action btn-delete" onclick="confirmDeleteParty('${item.id}')" title="Delete">
+                                    <span class="material-symbols-outlined" style="font-size: 20px;">delete</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
-                    <div class="party-footer">
-                        <!-- Direct Native Call Logic Integration Only -->
-                        <a href="tel:${item.phone}" class="btn-card-action btn-call" onclick="vibrateApp(15)" title="Call Party">
-                            <span class="material-symbols-outlined" style="font-size: 18px;">call</span>
-                        </a>
-                        <button class="btn-card-action btn-edit" onclick="vibrateApp(20); openPartyModal('${item.id}')" title="Edit Profile">
-                            <span class="material-symbols-outlined" style="font-size: 18px;">edit</span>
-                        </button>
-                        <button class="btn-card-action btn-delete" onclick="vibrateApp(20); confirmDeleteParty('${item.id}')" title="Delete Profile">
-                            <span class="material-symbols-outlined" style="font-size: 18px;">delete</span>
-                        </button>
-                    </div>
-                </div>
-            `;
+                `;
+                grid.insertAdjacentHTML('beforeend', html);
+            });
         }
 
-        // Endless Infinite Scroll Listener Implementation
-        document.getElementById('mainScroll').addEventListener('scroll', (e) => {
-            const el = e.target;
-            if (el.scrollHeight - el.scrollTop <= el.clientHeight + 80) loadParties(true); 
-        });
-
-        // Search Debounce Matrix
+        // Search Input Handling
         let searchTimeout;
         document.getElementById('searchInput').addEventListener('input', (e) => {
             clearTimeout(searchTimeout);
+            currentSearch = e.target.value.trim();
             searchTimeout = setTimeout(() => {
-                currentSearch = e.target.value.toLowerCase().trim();
                 loadParties(false);
-            }, 400); 
+            }, 500);
+        });
+
+        // Infinite Scroll
+        document.getElementById('mainScroll').addEventListener('scroll', (e) => {
+            const { scrollTop, scrollHeight, clientHeight } = e.target;
+            if (scrollTop + clientHeight >= scrollHeight - 50) {
+                loadParties(true);
+            }
         });
 
     </script>
