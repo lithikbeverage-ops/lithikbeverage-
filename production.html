@@ -193,6 +193,8 @@
         .recipe-badge { font-size: 0.75rem; background: var(--input-bg); padding: 4px 8px; border-radius: 6px; color: var(--text-muted); font-weight: 600; }
         .recipe-item { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); padding: 4px 0; }
         .recipe-item span { color: var(--text-main); font-weight: 600; }
+        .btn-delete-recipe:hover { background: rgba(239, 68, 68, 0.15) !important; transform: scale(1.05); }
+        .btn-delete-recipe:active { transform: scale(0.95); }
 
         /* Toasts */
         .toast-msg { position: fixed; top: 20px; left: 50%; transform: translate(-50%, -20px); color: white; padding: 12px 24px; border-radius: 8px; z-index: 9999; display: none; font-weight: 600; font-size: 0.95em; align-items: center; gap: 10px; opacity: 0; transition: all 0.3s; box-shadow: var(--shadow-lg); }
@@ -495,8 +497,26 @@
                 <h3 style="margin-bottom: 8px; font-size: 1.25rem; color: var(--text-main); font-weight: 700;">Delete Production?</h3>
                 <p style="color: var(--text-muted); margin-bottom: 24px; font-size: 0.95rem; line-height: 1.5;">Are you sure? This will delete the record and <strong>automatically reverse</strong> the math (Remove from Finished, Restore to Raw Godown).</p>
                 <div style="display: flex; gap: 12px;">
-                    <button type="button" onclick="closeMiniModal('miniModalDeleteProduction')" style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main); font-weight: 600; cursor: pointer; transition: all 0.2s;">Cancel</button>
+                    <button type="button" onclick="history.back()" style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main); font-weight: 600; cursor: pointer; transition: all 0.2s;">Cancel</button>
                     <button type="button" id="btnConfirmDeleteProduction" class="btn-primary" onclick="executeDeleteProduction()" style="flex: 1; background: var(--danger-color); box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2); border: none; padding: 12px;">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recipe Delete Mini Popup Modal -->
+    <div class="mini-modal-overlay" id="miniModalDeleteRecipe">
+        <div class="mini-modal-content">
+            <input type="hidden" id="deleteRecipeId">
+            <div style="text-align: center;">
+                <div style="width: 64px; height: 64px; background: rgba(239, 68, 68, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto;">
+                    <span class="material-symbols-outlined" style="font-size: 32px; color: var(--danger-color);">delete_forever</span>
+                </div>
+                <h3 style="margin-bottom: 8px; font-size: 1.25rem; color: var(--text-main); font-weight: 700;">Delete Recipe?</h3>
+                <p style="color: var(--text-muted); margin-bottom: 24px; font-size: 0.95rem; line-height: 1.5;">Are you sure you want to completely delete this recipe configuration? This will permanently remove the raw material mapping for this product.</p>
+                <div style="display: flex; gap: 12px;">
+                    <button type="button" onclick="history.back()" style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main); font-weight: 600; cursor: pointer; transition: all 0.2s;">Cancel</button>
+                    <button type="button" id="btnConfirmDeleteRecipe" class="btn-primary" onclick="executeDeleteRecipe()" style="flex: 1; background: var(--danger-color); box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2); border: none; padding: 12px;">Delete</button>
                 </div>
             </div>
         </div>
@@ -567,6 +587,43 @@
 
         window.openMiniModal = function(id) { vibrateApp(20); document.getElementById(id).classList.add('active'); };
         window.closeMiniModal = function(id) { document.getElementById(id).classList.remove('active'); };
+
+        // Helper strictly for Recipe deletion with mobile back button capability
+        window.promptDeleteRecipe = function(id) {
+            vibrateApp(20);
+            document.getElementById('deleteRecipeId').value = id;
+            const modalId = 'miniModalDeleteRecipe';
+            document.getElementById(modalId).classList.add('active');
+            history.pushState({ modal: modalId }, '', `#${modalId}`);
+        };
+
+        // Execution of full deletion logic entirely on the recipe model mapping
+        window.executeDeleteRecipe = async function() {
+            vibrateApp(30);
+            const id = document.getElementById('deleteRecipeId').value;
+            if(!id) return;
+
+            const btn = document.getElementById('btnConfirmDeleteRecipe');
+            btn.disabled = true; btn.innerText = "Deleting...";
+
+            try {
+                const docRef = doc(db, "inventory", id);
+                await updateDoc(docRef, { 
+                    recipe: [],
+                    hasRecipe: false, 
+                    lastUpdated: new Date().toISOString()
+                });
+                
+                showToast("Recipe deleted completely!", "success");
+                history.back();
+                loadRecipes(false); 
+            } catch (err) {
+                console.error(err);
+                showToast("Failed to delete recipe", "error");
+            } finally {
+                btn.disabled = false; btn.innerText = "Delete";
+            }
+        };
 
         // Firebase Error Handler for Missing Indexes
         window.handleFirebaseError = function(error, fallbackId) {
@@ -863,7 +920,12 @@
                         <div class="recipe-card" onclick="openRecipeBuilder('${docSnap.id}')" style="cursor:pointer; transition:transform 0.2s;">
                             <div class="recipe-header">
                                 <div class="recipe-title">${rData.name}</div>
-                                <div class="recipe-badge">Configured</div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="recipe-badge">Configured</div>
+                                    <button type="button" class="btn-delete-recipe" onclick="event.stopPropagation(); window.promptDeleteRecipe('${docSnap.id}')" style="background: rgba(239, 68, 68, 0.1); color: var(--danger-color); border: none; border-radius: 6px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;">
+                                        <span class="material-symbols-outlined" style="font-size: 16px;">delete</span>
+                                    </button>
+                                </div>
                             </div>
                             <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase;">Uses (Raw Materials):</div>
                             ${materialsStr}
