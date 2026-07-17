@@ -1,29 +1,64 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper Function: Checks if the authenticated user has the admin claim
-    function isAdmin() {
-      return request.auth != null && request.auth.token.admin == true;
-    }
-
-    // Helper Function: Checks if user is authenticated at all
-    function isSignedIn() {
+    // ---------------------------------------------------------
+    // REUSABLE SECURITY FUNCTIONS
+    // ---------------------------------------------------------
+    
+    // Check if the user is authenticated
+    function isAuthenticated() {
       return request.auth != null;
     }
 
-    // --- COLLECTION RULES ---
+    // Check if the authenticated user's document has the 'admin' field set to true
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.admin == true;
+    }
 
-    // Apply strict Admin-Only access to all collections
+    // Check if the authenticated user is the owner of the requested document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // ---------------------------------------------------------
+    // USERS COLLECTION RULES
+    // ---------------------------------------------------------
+    
+    match /users/{userId} {
+      
+      // READ: Admins can read all user profiles. Users can only read their own profile.
+      allow read: if isAdmin() || isOwner(userId);
+
+      // CREATE: Admins can create any user. 
+      // Users can create their own profile, but CANNOT set the 'admin' field to true.
+      allow create: if isAdmin() || (
+        isOwner(userId) && 
+        request.resource.data.get('admin', false) == false
+      );
+
+      // UPDATE: Admins can update any user profile.
+      // Users can update their own profile, but CANNOT modify the 'admin' field.
+      allow update: if isAdmin() || (
+        isOwner(userId) && 
+        // Ensures the incoming admin value exactly matches the existing admin value
+        request.resource.data.get('admin', resource.data.admin) == resource.data.admin
+      );
+
+      // DELETE: Only admins have the authority to delete users.
+      allow delete: if isAdmin();
+    }
+
+    // ---------------------------------------------------------
+    // GLOBAL FALLBACK RULES (All other collections)
+    // ---------------------------------------------------------
+    
+    // By default, lock down all other collections (e.g., inventory, parties, expenses) 
+    // so that ONLY administrators can read and write to them.
     match /{document=**} {
       allow read, write: if isAdmin();
     }
-
-    // Optional: If you have public data that anyone can read, 
-    // you would add a specific block before the catch-all match above:
-    // match /publicData/{doc} {
-    //   allow read: if true;
-    // }
+    
   }
 }
