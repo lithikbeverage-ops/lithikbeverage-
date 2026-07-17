@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Accounts & Reports - LITHIK BEVERAGE</title>
+    <title>Dashboard - LITHIK BEVERAGE</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
@@ -252,7 +252,7 @@
         <header>
             <div class="header-left">
                 <img src="images/icon.png" alt="Logo" class="company-logo" onerror="this.src='https://via.placeholder.com/40'">
-                <h1>ACCOUNTS</h1>
+                <h1>DASHBOARD</h1>
             </div>
             <div class="header-right">
                 <div class="header-icon-btn" onclick="vibrateApp(20); openMiniModal('miniModalSingleBill')" title="Download Bill">
@@ -342,7 +342,7 @@
 
                         <div class="fin-card" style="grid-column: 1 / -1; display: flex; flex-direction: column; gap: 20px;">
                             <div class="fin-header">
-                                <span>Visual Analytics</span>
+                                <span>Visual Analytics (This Month)</span>
                             </div>
                             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; width: 100%;">
                                 <div style="height: 320px; position: relative; width: 100%;">
@@ -670,25 +670,26 @@
             if (globalBarChart) globalBarChart.destroy();
             if (globalPieChart) globalPieChart.destroy();
 
+            // Modified exactly as requested: One month only for the graph (This Month), without profit data
             globalBarChart = new Chart(barCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['Sales', 'Purchases', 'Production', 'Filling', 'Expenses', 'Profit'],
+                    labels: ['Sales', 'Purchases', 'Production', 'Filling', 'Expenses'],
                     datasets: [
-                        { label: 'This Month', data: [dThis.salesTotal, dThis.purchasesTotal, dThis.productionTotal, dThis.fillingTotal, dThis.expensesTotal, dThis.profit], backgroundColor: '#1e40af' },
-                        { label: 'Last Month', data: [dLast.salesTotal, dLast.purchasesTotal, dLast.productionTotal, dLast.fillingTotal, dLast.expensesTotal, dLast.profit], backgroundColor: '#94a3b8' }
+                        { label: 'This Month', data: [dThis.salesTotal, dThis.purchasesTotal, dThis.productionTotal, dThis.fillingTotal, dThis.expensesTotal], backgroundColor: '#1e40af' }
                     ]
                 },
                 options: { responsive: true, maintainAspectRatio: false }
             });
 
+            // Modified exactly as requested: Removed profit component from the pie chart
             globalPieChart = new Chart(pieCtx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Purchases', 'Production', 'Filling', 'Expenses', 'Net Profit'],
+                    labels: ['Purchases', 'Production', 'Filling', 'Expenses'],
                     datasets: [{
-                        data: [dThis.purchasesTotal, dThis.productionTotal, dThis.fillingTotal, dThis.expensesTotal, Math.max(0, dThis.profit)],
-                        backgroundColor: ['#f59e0b', '#8b5cf6', '#0ea5e9', '#ef4444', '#10b981'],
+                        data: [dThis.purchasesTotal, dThis.productionTotal, dThis.fillingTotal, dThis.expensesTotal],
+                        backgroundColor: ['#f59e0b', '#8b5cf6', '#0ea5e9', '#ef4444'],
                         borderWidth: 0
                     }]
                 },
