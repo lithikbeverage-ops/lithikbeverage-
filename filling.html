@@ -160,7 +160,6 @@
         .toast-msg.success { background: var(--success-color); }
         .toast-msg.show { display: flex; opacity: 1; transform: translate(-50%, 0); }
 
-        /* New additions for Date Filter and Loader */
         .header-date-picker {
             padding: 8px 12px;
             border-radius: 10px;
@@ -180,7 +179,7 @@
         .clear-date-btn.active { display: flex; }
         .mobile-filter-icon { display: none; }
 
-        #scrollLoader { text-align: center; padding: 20px; color: var(--text-muted); font-size: 0.9rem; font-weight: 600; display: none; align-items: center; justify-content: center; gap: 10px; }
+        #scrollLoader, #recipeScrollLoader { text-align: center; padding: 20px; color: var(--text-muted); font-size: 0.9rem; font-weight: 600; display: none; align-items: center; justify-content: center; gap: 10px; }
 
         @media (min-width: 768px) {
             #app-shell { flex-direction: column; }
@@ -193,13 +192,12 @@
             .mobile-label { display: block; }
             .items-header { display: none; }
             .item-row { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto; padding: 16px; gap: 12px; }
-            .item-row > :nth-child(1) { grid-column: span 2; } /* Product */
-            .item-row > :nth-child(2) { grid-column: 1; } /* Qty */
-            .item-row > :nth-child(3) { grid-column: 2; } /* Reject */
-            .item-row > :nth-child(4) { grid-column: 1; } /* Cost */
-            .item-row > :nth-child(5) { grid-column: 2; justify-self: end; align-self: end; } /* Remove btn */
+            .item-row > :nth-child(1) { grid-column: span 2; }
+            .item-row > :nth-child(2) { grid-column: 1; }
+            .item-row > :nth-child(3) { grid-column: 2; }
+            .item-row > :nth-child(4) { grid-column: 1; }
+            .item-row > :nth-child(5) { grid-column: 2; justify-self: end; align-self: end; }
 
-            /* Mobile tweaks for header date filter */
             .header-date-picker { position: absolute; left: 0; top: 0; width: 38px; height: 38px; opacity: 0; z-index: 5; padding: 0; margin: 0; }
             .mobile-filter-icon { display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main); transition: all 0.2s; }
             .mobile-filter-icon.active-filter { background: rgba(30, 64, 175, 0.05); color: var(--primary-color); border-color: var(--primary-color); }
@@ -249,7 +247,6 @@
                         <!-- Loaded dynamically -->
                     </div>
 
-                    <!-- Scroll Loader added -->
                     <div id="scrollLoader">
                         <span class="skeleton" style="width:16px; height:16px; border-radius:50%;"></span> Loading records...
                     </div>
@@ -329,6 +326,10 @@
             <div id="recipeGrid">
                 <!-- Loaded dynamically -->
             </div>
+            
+            <div id="recipeScrollLoader">
+                <span class="skeleton" style="width:16px; height:16px; border-radius:50%;"></span> Loading recipes...
+            </div>
         </div>
     </div>
 
@@ -341,8 +342,6 @@
             </div>
         </div>
         <div class="form-group">
-            <input type="hidden" id="editRecipeInvId">
-            
             <div class="input-wrapper">
                 <label>Select Finished Good (e.g. 500ML Filled Box) *</label>
                 <select id="rbFinishedGood">
@@ -392,21 +391,11 @@
     <script type="module">
         import { app, db } from './config.js';
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-        import { collection, doc, getDocs, query, orderBy, setDoc, updateDoc, deleteDoc, serverTimestamp, limit, startAfter, where, runTransaction, increment } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+        import { collection, doc, getDocs, query, orderBy, updateDoc, serverTimestamp, limit, startAfter, where, runTransaction, increment } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
-        // Navigation Setup
         const navItems = [
             { name: 'Dashboard', path: 'index.html', icon: '<path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>' },
-            { name: 'Billing', path: 'bill.html', icon: '<path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/>' },
-            { name: 'Production', path: 'production.html', icon: '<path d="M19.36 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.36 8.04A5.994 5.994 0 000 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.64-4.96zM10 17l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>' },
-            { name: 'Filling', path: 'filling.html', icon: '<path d="M12 2c-5.33 0-8 2.67-8 4v12c0 1.33 2.67 4 8 4s8-2.67 8-4V6c0-1.33-2.67-4-8-4zm0 2c4.42 0 6 1.5 6 2s-1.58 2-6 2-6-1.5-6-2 1.58-2 6-2z"/>' },
-            { name: 'Inventory', path: 'inventory.html', icon: '<path d="M20 2H4c-1.1 0-2 .9-2 2v3.01c0 .72.43 1.34 1 1.69V20c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8.7c.57-.35 1-.97 1-1.69V4c0-1.1-.9-2-2-2zm-5 12H9v-2h6v2zm5-7H4V4h16v3z"/>' },
-            { name: 'Purchase', path: 'purchase.html', icon: '<path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>' },
-            { name: 'Sales', path: 'sales.html', icon: '<path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>' },
-            { name: 'Parties', path: 'parties.html', icon: '<path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>' },
-            { name: 'Expenses', path: 'expenses.html', icon: '<path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>' },
-            { name: 'Accounts', path: 'accounts.html', icon: '<path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>' },
-            { name: 'Labour', path: 'attendance.html', icon: '<path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>' }
+            { name: 'Filling', path: 'filling.html', icon: '<path d="M12 2c-5.33 0-8 2.67-8 4v12c0 1.33 2.67 4 8 4s8-2.67 8-4V6c0-1.33-2.67-4-8-4zm0 2c4.42 0 6 1.5 6 2s-1.58 2-6 2-6-1.5-6-2 1.58-2 6-2z"/>' }
         ];
 
         const desktopNav = document.getElementById('desktop-nav');
@@ -431,7 +420,6 @@
             setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.style.display = 'none', 300); }, 3000);
         };
 
-        // Modal Management
         window.openModal = function(id) { document.getElementById(id).classList.add('active'); history.pushState({modal: id}, '', `#${id}`); };
         window.addEventListener('popstate', (e) => { 
             document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active')); 
@@ -441,19 +429,22 @@
         window.openMiniModal = function(id) { vibrateApp(20); document.getElementById(id).classList.add('active'); };
         window.closeMiniModal = function(id) { document.getElementById(id).classList.remove('active'); };
 
-        // Global Variables
+        // Global State (No Inventory Caching!)
         const PAGE_LIMIT = 10;
         let lastVisibleDoc = null;
         let isLoadingLogs = false;
         let hasMoreLogs = true;
         let currentSearchQuery = '';
-        let filterDate = ''; // Added global variable for date filter
+        let filterDate = ''; 
         let searchDebounceTimeout = null;
-        let inventoryProducts = [];
         let itemsCounter = 0;
-        let fillingLogsCache = [];
+        let fillingLogsCache = []; // Only for immediate log reversals 
 
-        // Date Filter Logic Added
+        // Pagination for Recipes
+        let recipeLastDoc = null;
+        let isLoadingRecipes = false;
+        let hasMoreRecipes = true;
+
         window.applyDateFilter = function(val) {
             filterDate = val;
             const input = document.getElementById('masterDateFilter');
@@ -476,109 +467,219 @@
             applyDateFilter('');
         };
 
-        // Initialization
         const auth = getAuth(app);
         onAuthStateChanged(auth, async (user) => {
             if (user) { 
                 document.getElementById('fDate').valueAsDate = new Date();
                 setupPaginationAndSearch();
-                await fetchInventoryProducts();
                 loadFillingLogs(false); 
+            } else {
+                window.location.replace('login.html');
             }
-            else window.location.replace('login.html');
         });
 
-        async function fetchInventoryProducts() {
+        // ==========================================
+        // 1. SELECT PAGINATION ENGINE (NO CACHE)
+        // ==========================================
+        async function loadSelectOptions(selectEl, filterConfigured = false, lastDoc = null) {
+            const loadMoreOpt = selectEl.querySelector('.load-more-opt');
+            if (loadMoreOpt) loadMoreOpt.remove();
+
+            let qRef = collection(db, "inventory");
+            let constraints = [orderBy("name")];
+            if (lastDoc) constraints.push(startAfter(lastDoc));
+            constraints.push(limit(15)); // Fetch chunk
+
             try {
-                // Fetch ALL items from inventory (Both empty materials and finished goods reside here)
-                const q = query(collection(db, "inventory"), orderBy("name"));
+                const q = query(qRef, ...constraints);
                 const snap = await getDocs(q);
-                inventoryProducts = [];
-                snap.forEach(doc => inventoryProducts.push({ id: doc.id, ...doc.data() }));
-            } catch (err) { console.error("Error fetching inventory:", err); }
+                let addedCount = 0;
+
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    
+                    // Local filter if we strictly want recipe-configured items for filling logs
+                    if (filterConfigured && !data.fillingRecipe) return; 
+
+                    const opt = document.createElement('option');
+                    opt.value = doc.id;
+                    opt.textContent = data.name;
+                    opt.dataset.name = data.name;
+                    
+                    if (data.fillingRecipe) {
+                        opt.dataset.emptyId = data.fillingRecipe.emptyBottleId;
+                        opt.dataset.emptyName = data.fillingRecipe.emptyBottleName;
+                        opt.dataset.ratio = data.fillingRecipe.qtyPerUnit;
+                    }
+                    selectEl.appendChild(opt);
+                    addedCount++;
+                });
+
+                // Attach 'Load More' if full batch fetched
+                if (snap.docs.length === 15) {
+                    const moreOpt = document.createElement('option');
+                    moreOpt.value = "LOAD_MORE_PAGINATION";
+                    moreOpt.className = "load-more-opt";
+                    moreOpt.textContent = "--- Load More Items ---";
+                    selectEl._lastDoc = snap.docs[snap.docs.length - 1];
+                    selectEl.appendChild(moreOpt);
+
+                    // If filter stripped everything, automatically fetch next batch
+                    if (filterConfigured && addedCount === 0) {
+                        loadSelectOptions(selectEl, true, selectEl._lastDoc);
+                    }
+                } else {
+                    selectEl._lastDoc = null;
+                }
+            } catch (err) {
+                console.error("Select Pagination Error: ", err);
+            }
         }
 
+        // Global Event Delegation to intercept Dropdown Pagination Clicks
+        document.addEventListener('change', async (e) => {
+            if (e.target.tagName === 'SELECT' && e.target.value === 'LOAD_MORE_PAGINATION') {
+                e.target.disabled = true;
+                const isConfiguredOnly = e.target.classList.contains('f-product');
+                await loadSelectOptions(e.target, isConfiguredOnly, e.target._lastDoc);
+                e.target.value = ""; 
+                e.target.disabled = false;
+            }
+        });
+
         // ==========================================
-        // 1. FILLING RECIPE MASTER
+        // 2. RECIPE MASTER (PAGINATED LIST)
         // ==========================================
-        window.openRecipeMaster = async function() {
+        window.openRecipeMaster = function() {
             vibrateApp(20);
-            await fetchInventoryProducts();
-            renderRecipeGrid();
+            loadRecipes(false);
             openModal('modalRecipeMaster');
         };
 
-        function renderRecipeGrid() {
+        async function loadRecipes(isAppend = false) {
+            if (isLoadingRecipes) return;
+            if (isAppend && !hasMoreRecipes) return;
+            isLoadingRecipes = true;
+
             const grid = document.getElementById('recipeGrid');
-            // Filter inventory items that have a filling recipe defined
-            const recipes = inventoryProducts.filter(p => p.fillingRecipe);
-            
-            if(recipes.length === 0) {
-                grid.innerHTML = '<div style="text-align:center; padding: 30px; color:var(--text-muted); background:var(--bg-surface); border-radius:12px; border:1px dashed var(--border-color);">No filling recipes defined yet.<br>Click "Add Recipe" to map finished goods to empty bottles.</div>';
-                return;
+            const loader = document.getElementById('recipeScrollLoader');
+
+            if (!isAppend) {
+                grid.innerHTML = '<div class="loading-indicator">Loading recipes...</div>';
+                recipeLastDoc = null;
+                hasMoreRecipes = true;
+            } else {
+                loader.style.display = 'flex';
             }
-            
-            grid.innerHTML = recipes.map(r => `
-                <div class="recipe-card" onclick="openRecipeBuilder('${r.id}')" style="cursor:pointer; transition:transform 0.2s;">
-                    <div class="recipe-header">
-                        <div class="recipe-title">${r.name}</div>
-                        <div class="recipe-badge">Configured</div>
-                    </div>
-                    <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase;">Uses (Empty Bottles):</div>
-                    <div class="recipe-item">
-                        <span>${r.fillingRecipe.emptyBottleName}</span>
-                        <div>${r.fillingRecipe.qtyPerUnit} Units per Case</div>
-                    </div>
-                </div>
-            `).join('');
+
+            try {
+                let qRef = collection(db, "inventory");
+                let constraints = [orderBy("name"), limit(15)];
+                if (isAppend && recipeLastDoc) constraints.push(startAfter(recipeLastDoc));
+
+                const q = query(qRef, ...constraints);
+                const snap = await getDocs(q);
+
+                if (!isAppend) grid.innerHTML = '';
+                if (snap.empty) {
+                    if (!isAppend) grid.innerHTML = '<div style="text-align:center; padding: 30px; color:var(--text-muted); background:var(--bg-surface); border-radius:12px; border:1px dashed var(--border-color);">No filling recipes defined yet.<br>Click "Add Recipe" to map finished goods to empty bottles.</div>';
+                    hasMoreRecipes = false;
+                    isLoadingRecipes = false;
+                    loader.style.display = 'none';
+                    return;
+                }
+
+                recipeLastDoc = snap.docs[snap.docs.length - 1];
+                if (snap.docs.length < 15) hasMoreRecipes = false;
+
+                let html = '';
+                let visibleCount = 0;
+                
+                snap.forEach(doc => {
+                    const r = { id: doc.id, ...doc.data() };
+                    if (!r.fillingRecipe) return; // Only render those configured locally to prevent index crash
+
+                    html += `
+                        <div class="recipe-card" onclick="openRecipeBuilder('${r.id}', '${r.name.replace(/'/g, "\\'")}', '${r.fillingRecipe.emptyBottleId}', '${r.fillingRecipe.emptyBottleName.replace(/'/g, "\\'")}', '${r.fillingRecipe.qtyPerUnit}')" style="cursor:pointer; transition:transform 0.2s;">
+                            <div class="recipe-header">
+                                <div class="recipe-title">${r.name}</div>
+                                <div class="recipe-badge">Configured</div>
+                            </div>
+                            <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase;">Uses (Empty Bottles):</div>
+                            <div class="recipe-item">
+                                <span>${r.fillingRecipe.emptyBottleName}</span>
+                                <div>${r.fillingRecipe.qtyPerUnit} Units per Case</div>
+                            </div>
+                        </div>
+                    `;
+                    visibleCount++;
+                });
+
+                grid.insertAdjacentHTML('beforeend', html);
+                
+                // If local filtering removed everything in this batch, keep fetching silently
+                if (visibleCount === 0 && hasMoreRecipes) {
+                    isLoadingRecipes = false;
+                    loadRecipes(true);
+                }
+
+            } catch (err) {
+                console.error(err);
+                if (!isAppend) grid.innerHTML = '<div class="loading-indicator" style="color:var(--danger-color)">Error loading recipes.</div>';
+            } finally {
+                isLoadingRecipes = false;
+                loader.style.display = 'none';
+            }
         }
 
-        window.openRecipeBuilder = function(editInvId = null) {
+        // Add infinite scroll listener directly to Recipe Modal
+        document.getElementById('modalRecipeMaster').addEventListener('scroll', function() {
+            if ((this.scrollTop + this.clientHeight) >= (this.scrollHeight - 60)) {
+                loadRecipes(true);
+            }
+        });
+
+        window.openRecipeBuilder = function(editInvId = null, editName = null, editEmptyId = null, editEmptyName = null, editRatio = null) {
             vibrateApp(20);
-            
             const selFinished = document.getElementById('rbFinishedGood');
             const selEmpty = document.getElementById('rbEmptyMaterial');
             
-            // Populate Dropdowns (Both from Inventory)
-            let optionsHtml = '<option value="" disabled selected>Select from Inventory...</option>';
-            inventoryProducts.forEach(p => {
-                optionsHtml += `<option value="${p.id}">${p.name}</option>`;
-            });
-            selFinished.innerHTML = optionsHtml;
-            selEmpty.innerHTML = optionsHtml;
+            selFinished.innerHTML = '<option value="" disabled selected>Select from Inventory...</option>';
+            selEmpty.innerHTML = '<option value="" disabled selected>Select from Inventory...</option>';
             
             if (editInvId) {
                 document.getElementById('recipeBuilderTitle').innerText = "Edit Recipe";
-                const product = inventoryProducts.find(p => p.id === editInvId);
                 
-                selFinished.value = editInvId;
+                // Directly inject to prevent full queries
+                selFinished.innerHTML = `<option value="${editInvId}" data-name="${editName}" selected>${editName}</option>`;
                 selFinished.disabled = true;
                 
-                if (product && product.fillingRecipe) {
-                    selEmpty.value = product.fillingRecipe.emptyBottleId;
-                    document.getElementById('rbQtyRatio').value = product.fillingRecipe.qtyPerUnit;
-                }
+                selEmpty.innerHTML = `<option value="${editEmptyId}" data-name="${editEmptyName}" selected>${editEmptyName}</option>`;
+                document.getElementById('rbQtyRatio').value = editRatio;
+
+                // Load remaining for the empty dropdown in case they want to change it
+                loadSelectOptions(selEmpty, false);
             } else {
                 document.getElementById('recipeBuilderTitle').innerText = "Create Recipe";
-                selFinished.value = "";
                 selFinished.disabled = false;
-                selEmpty.value = "";
+                
+                loadSelectOptions(selFinished, false);
+                loadSelectOptions(selEmpty, false);
                 document.getElementById('rbQtyRatio').value = "";
             }
-            
             openModal('modalRecipeBuilder');
         };
 
         document.getElementById('btnSaveRecipe').addEventListener('click', async () => {
             vibrateApp(30);
-            const finishedId = document.getElementById('rbFinishedGood').value;
-            const emptyId = document.getElementById('rbEmptyMaterial').value;
+            const finishedOpt = document.getElementById('rbFinishedGood').selectedOptions[0];
+            const emptyOpt = document.getElementById('rbEmptyMaterial').selectedOptions[0];
             const qtyRatio = parseFloat(document.getElementById('rbQtyRatio').value);
 
-            if (!finishedId || !emptyId || isNaN(qtyRatio) || qtyRatio <= 0) {
+            if (!finishedOpt.value || !emptyOpt.value || isNaN(qtyRatio) || qtyRatio <= 0) {
                 showToast("Please fill all fields correctly.", "error"); return;
             }
-            if (finishedId === emptyId) {
+            if (finishedOpt.value === emptyOpt.value) {
                 showToast("Finished good and empty material cannot be the same.", "error"); return;
             }
 
@@ -586,22 +687,18 @@
             btn.disabled = true; btn.innerHTML = "Saving...";
 
             try {
-                const emptyProduct = inventoryProducts.find(p => p.id === emptyId);
-                
-                // Save fillingRecipe object inside the finished good's inventory document
-                const docRef = doc(db, "inventory", finishedId);
+                const docRef = doc(db, "inventory", finishedOpt.value);
                 await updateDoc(docRef, { 
                     fillingRecipe: {
-                        emptyBottleId: emptyId,
-                        emptyBottleName: emptyProduct.name,
+                        emptyBottleId: emptyOpt.value,
+                        emptyBottleName: emptyOpt.dataset.name || emptyOpt.text,
                         qtyPerUnit: qtyRatio
                     },
                     lastUpdated: new Date().toISOString()
                 });
                 
                 showToast("Filling Recipe saved successfully!");
-                await fetchInventoryProducts();
-                renderRecipeGrid();
+                loadRecipes(false); // Refresh paginated list
                 history.back(); 
             } catch (err) {
                 console.error(err);
@@ -613,7 +710,7 @@
         });
 
         // ==========================================
-        // 2. DAILY LOGGING (DYNAMIC ITEMS & TRANSACTION)
+        // 3. DAILY LOGGING (DYNAMIC ROWS)
         // ==========================================
         window.openFillingModal = function() {
             document.getElementById('fDcNo').value = '';
@@ -628,18 +725,13 @@
             const id = `item_row_${itemsCounter}`;
             const container = document.getElementById('itemsContainer');
             
-            // Build options from products that HAVE a filling recipe
-            let optionsHtml = '<option value="" disabled selected>Select Finished Good...</option>';
-            const configuredProducts = inventoryProducts.filter(p => p.fillingRecipe);
-            configuredProducts.forEach(p => {
-                optionsHtml += `<option value="${p.id}">${p.name}</option>`;
-            });
-            
             const html = `
                 <div class="item-row" id="${id}">
                     <div class="field-wrap">
                         <label class="mobile-label">Finished Good</label>
-                        <select class="f-product">${optionsHtml}</select>
+                        <select class="f-product">
+                            <option value="" disabled selected>Select Finished Good...</option>
+                        </select>
                     </div>
                     <div class="field-wrap">
                         <label class="mobile-label">Qty (Cases)</label>
@@ -659,6 +751,10 @@
                 </div>
             `;
             container.insertAdjacentHTML('beforeend', html);
+            
+            // Initiate pagination fetch for this specific new dropdown
+            const selectEl = document.getElementById(id).querySelector('.f-product');
+            loadSelectOptions(selectEl, true); // true = filter configured recipes only
         };
 
         document.getElementById('btnSaveFilling').addEventListener('click', async () => {
@@ -674,36 +770,40 @@
             let totalCost = 0;
 
             document.querySelectorAll('.item-row').forEach(row => {
-                const prodId = row.querySelector('.f-product').value;
+                const selectEl = row.querySelector('.f-product');
+                const opt = selectEl.selectedOptions[0];
                 const qty = parseInt(row.querySelector('.f-qty').value) || 0;
                 const reject = parseInt(row.querySelector('.f-reject').value) || 0;
                 const cost = parseFloat(row.querySelector('.f-cost').value) || 0;
                 
-                const hasData = prodId || qty > 0 || reject > 0 || cost > 0;
+                const hasData = opt.value || qty > 0 || reject > 0 || cost > 0;
                 
                 if (hasData) {
-                    // Check validity: must have selected product, no negative values, and at least some cases OR some rejects recorded
-                    if (prodId && (qty >= 0 && reject >= 0 && cost >= 0) && (qty > 0 || reject > 0)) {
-                        const product = inventoryProducts.find(p => p.id === prodId);
+                    if (opt.value && (qty >= 0 && reject >= 0 && cost >= 0) && (qty > 0 || reject > 0)) {
                         
-                        if (!product || !product.fillingRecipe) {
+                        // Extract directly from the DOM attributes instead of searching a cache!
+                        const emptyId = opt.dataset.emptyId;
+                        const emptyName = opt.dataset.emptyName;
+                        const ratio = parseFloat(opt.dataset.ratio);
+                        
+                        if (!emptyId || isNaN(ratio)) {
                             validItems = false;
                             return;
                         }
 
                         items.push({ 
-                            finishedId: prodId, 
-                            finishedName: product.name, 
-                            emptyId: product.fillingRecipe.emptyBottleId,
-                            emptyName: product.fillingRecipe.emptyBottleName,
-                            ratio: product.fillingRecipe.qtyPerUnit,
+                            finishedId: opt.value, 
+                            finishedName: opt.dataset.name, 
+                            emptyId: emptyId,
+                            emptyName: emptyName,
+                            ratio: ratio,
                             qtyCases: qty, 
                             rejected: reject, 
                             cost: cost 
                         });
                         totalCost += cost;
                     } else {
-                        validItems = false; // Missing product selection, negative numbers, or missing both quantities
+                        validItems = false; 
                     }
                 }
             });
@@ -715,7 +815,6 @@
             btn.disabled = true; btn.innerHTML = "Processing Stock...";
 
             try {
-                // SERVER-SIDE SECURE TRANSACTION
                 await runTransaction(db, async (transaction) => {
                     const logRef = doc(collection(db, "filling_logs"));
                     
@@ -730,20 +829,15 @@
 
                     transaction.set(logRef, payload);
 
-                    // Update Inventory Stocks perfectly
                     items.forEach(item => {
                         const finishedRef = doc(db, "inventory", item.finishedId);
                         const emptyRef = doc(db, "inventory", item.emptyId);
                         
-                        // Rejects ONLY affect empty bottles, they are NOT added to finished goods.
                         const emptyToDeduct = (item.qtyCases * item.ratio) + item.rejected;
                         
-                        // Add filled cases (Only valid if > 0)
                         if (item.qtyCases > 0) {
                             transaction.update(finishedRef, { qty: increment(item.qtyCases), lastUpdated: new Date().toISOString() });
                         }
-                        
-                        // Deduct used empty bottles + rejected/wasted empty bottles
                         if (emptyToDeduct > 0) {
                             transaction.update(emptyRef, { qty: increment(-emptyToDeduct), lastUpdated: new Date().toISOString() });
                         }
@@ -752,9 +846,6 @@
 
                 showToast("Filling log saved & stock updated!");
                 history.back();
-                
-                // Refresh data
-                await fetchInventoryProducts();
                 loadFillingLogs(false); 
             } catch(e) {
                 console.error(e);
@@ -765,7 +856,7 @@
         });
 
         // ==========================================
-        // 3. DELETE (REVERSE TRANSACTION)
+        // 4. DELETE (REVERSE TRANSACTION)
         // ==========================================
         window.confirmDeleteFilling = function(id) {
             document.getElementById('deleteTargetId').value = id;
@@ -787,31 +878,25 @@
                 await runTransaction(db, async (transaction) => {
                     const logRef = doc(db, "filling_logs", id);
                     
-                    // Reverse Inventory Stocks correctly
+                    // Uses data strictly from the historical log payload - No inventory cache lookup required!
                     logData.items.forEach(item => {
                         const finishedRef = doc(db, "inventory", item.finishedId);
                         const emptyRef = doc(db, "inventory", item.emptyId);
-                        
                         const emptyToRestore = (item.qtyCases * item.ratio) + item.rejected;
                         
-                        // Deduct filled cases back out
                         if (item.qtyCases > 0) {
                             transaction.update(finishedRef, { qty: increment(-item.qtyCases), lastUpdated: new Date().toISOString() });
                         }
-                        // Add empty bottles & rejects back in
                         if (emptyToRestore > 0) {
                             transaction.update(emptyRef, { qty: increment(emptyToRestore), lastUpdated: new Date().toISOString() });
                         }
                     });
 
-                    // Delete the log
                     transaction.delete(logRef);
                 });
 
                 showToast("Log deleted & stock reverted!", "success");
                 closeMiniModal('miniModalDeleteFilling');
-                
-                await fetchInventoryProducts();
                 loadFillingLogs(false);
 
             } catch (err) {
@@ -823,7 +908,7 @@
         };
 
         // ==========================================
-        // 4. FEED RENDER & PAGINATION
+        // 5. FILLING LOGS PAGINATION (Main View)
         // ==========================================
         async function loadFillingLogs(isAppend = false) {
             if (isLoadingLogs) return;
@@ -834,41 +919,19 @@
             const scrollLoader = document.getElementById('scrollLoader');
             
             if (!isAppend) {
-                // Skeleton UI implementation
-                let skeletonHtml = `
-                    <div class="filling-card" style="padding: 20px; min-height: 160px; display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--border-color);">
-                        <div class="skeleton" style="width: 50%; height: 24px; border-radius: 4px;"></div>
-                        <div class="skeleton" style="width: 100%; height: 40px; border-radius: 8px;"></div>
-                        <div class="skeleton" style="width: 30%; height: 20px; border-radius: 4px; margin-top: auto;"></div>
-                    </div>
-                    <div class="filling-card" style="padding: 20px; min-height: 160px; display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--border-color);">
-                        <div class="skeleton" style="width: 50%; height: 24px; border-radius: 4px;"></div>
-                        <div class="skeleton" style="width: 100%; height: 40px; border-radius: 8px;"></div>
-                        <div class="skeleton" style="width: 30%; height: 20px; border-radius: 4px; margin-top: auto;"></div>
-                    </div>
-                    <div class="filling-card" style="padding: 20px; min-height: 160px; display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--border-color);">
-                        <div class="skeleton" style="width: 50%; height: 24px; border-radius: 4px;"></div>
-                        <div class="skeleton" style="width: 100%; height: 40px; border-radius: 8px;"></div>
-                        <div class="skeleton" style="width: 30%; height: 20px; border-radius: 4px; margin-top: auto;"></div>
-                    </div>
-                `;
-                grid.innerHTML = skeletonHtml;
+                grid.innerHTML = '<div class="loading-indicator">Loading logs...</div>';
                 lastVisibleDoc = null;
                 hasMoreLogs = true;
                 fillingLogsCache = [];
             } else {
-                removeLoadingIndicator();
-                scrollLoader.style.display = 'flex'; // Trigger standard bottom loader
+                scrollLoader.style.display = 'flex';
             }
             
             try {
                 let qRef = collection(db, "filling_logs");
                 let constraints = [];
                 
-                // Add Date Filter Logic
-                if (filterDate) {
-                    constraints.push(where("date", "==", filterDate));
-                }
+                if (filterDate) constraints.push(where("date", "==", filterDate));
 
                 if (currentSearchQuery) {
                     constraints.push(orderBy("company"));
@@ -878,15 +941,13 @@
                     constraints.push(orderBy("date", "desc"));
                 }
                 
-                if (isAppend && lastVisibleDoc) {
-                    constraints.push(startAfter(lastVisibleDoc));
-                }
+                if (isAppend && lastVisibleDoc) constraints.push(startAfter(lastVisibleDoc));
                 constraints.push(limit(PAGE_LIMIT));
 
                 let q = query(qRef, ...constraints);
-
                 const snap = await getDocs(q);
-                removeLoadingIndicator();
+                
+                scrollLoader.style.display = 'none';
                 
                 if (snap.empty) {
                     if (!isAppend) grid.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-muted); font-weight:500;">No filling logs found.</div>';
@@ -905,7 +966,6 @@
                     
                     const dFormatted = new Date(data.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric'});
                     
-                    // Render Dynamic Items list
                     let itemsHtml = '';
                     if (data.items) {
                         data.items.forEach(i => {
@@ -930,9 +990,7 @@
                                 <div class="fc-company"><span class="material-symbols-outlined">precision_manufacturing</span> ${data.company}</div>
                                 <div class="fc-date">${dFormatted}</div>
                             </div>
-                            
                             <div class="fc-items-list">${itemsHtml}</div>
-                            
                             <div class="fc-footer">
                                 <div>
                                     <div class="fc-dc" style="display: inline-block; margin-bottom: 4px;">DC NO: ${data.dcNo}</div>
@@ -951,20 +1009,12 @@
                 
             } catch(e) {
                 console.error(e);
-                removeLoadingIndicator();
+                scrollLoader.style.display = 'none';
                 if (!isAppend) grid.innerHTML = '<div style="text-align:center; padding:20px; color:var(--danger-color);">Failed to load logs.</div>';
                 else showToast("Error loading more logs", "error");
             } finally {
                 isLoadingLogs = false;
             }
-        }
-
-        function removeLoadingIndicator() {
-            // Keep any original logic, additionally hide the new #scrollLoader
-            const activeIndicator = document.getElementById('paginationLoading');
-            if (activeIndicator) activeIndicator.remove();
-            const scrollLoader = document.getElementById('scrollLoader');
-            if (scrollLoader) scrollLoader.style.display = 'none';
         }
 
         function setupPaginationAndSearch() {
