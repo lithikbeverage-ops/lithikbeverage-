@@ -134,9 +134,12 @@
         .items-section { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; margin-bottom: 24px; box-shadow: var(--shadow-sm); }
         .items-header { background: var(--input-bg); padding: 12px 16px; font-weight: 600; font-size: 0.9rem; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
         .item-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border-color); align-items: center; }
-        .item-row input, .item-row select { padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main); font-size: 0.9rem; width: 100%; outline: none; }
+        .field-wrap { display: flex; flex-direction: column; width: 100%; }
+        .mobile-label { display: none; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+        
+        .item-row input, .item-row select { padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main); font-size: 0.9rem; width: 100%; outline: none; height: 42px; }
         .item-row input:focus, .item-row select:focus { border-color: var(--primary-color); }
-        .btn-remove-row { color: var(--danger-color); background: rgba(239, 68, 68, 0.1); border: none; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-remove-row { color: var(--danger-color); background: rgba(239, 68, 68, 0.1); border: none; width: 42px; height: 42px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         
         .btn-add-row { width: 100%; padding: 12px; background: transparent; color: var(--primary-color); border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; border-bottom: 1px solid var(--border-color); }
         .btn-add-row:active { background: var(--input-bg); }
@@ -165,13 +168,14 @@
             .filling-grid { grid-template-columns: 1fr 1fr; }
         }
         @media (max-width: 767px) {
-            .item-row { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto; padding: 16px; gap: 8px; }
-            .item-row > :nth-child(1) { grid-column: span 2; }
-            .item-row > :nth-child(2) { grid-column: 1; }
-            .item-row > :nth-child(3) { grid-column: 2; }
-            .item-row > :nth-child(4) { grid-column: 1; }
-            .btn-remove-row { grid-column: 2; justify-self: end; width: 36px; height: 36px; }
+            .mobile-label { display: block; }
             .items-header { display: none; }
+            .item-row { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto; padding: 16px; gap: 12px; }
+            .item-row > :nth-child(1) { grid-column: span 2; } /* Product */
+            .item-row > :nth-child(2) { grid-column: 1; } /* Qty */
+            .item-row > :nth-child(3) { grid-column: 2; } /* Reject */
+            .item-row > :nth-child(4) { grid-column: 1; } /* Cost */
+            .item-row > :nth-child(5) { grid-column: 2; justify-self: end; align-self: end; } /* Remove btn */
         }
     </style>
 </head>
@@ -249,7 +253,7 @@
                     <div style="flex: 1; text-align: center;">Qty (Cases)</div>
                     <div style="flex: 1; text-align: center;">Reject (Bottles)</div>
                     <div style="flex: 1; text-align: center;">Cost (₹)</div>
-                    <div style="width: 36px;"></div>
+                    <div style="width: 42px;"></div>
                 </div>
                 
                 <div id="itemsContainer">
@@ -568,10 +572,22 @@
             
             const html = `
                 <div class="item-row" id="${id}">
-                    <select class="f-product">${optionsHtml}</select>
-                    <input type="number" placeholder="Cases" min="1" class="f-qty">
-                    <input type="number" placeholder="Reject" min="0" value="0" class="f-reject">
-                    <input type="number" placeholder="Cost" min="0" step="0.01" class="f-cost">
+                    <div class="field-wrap">
+                        <label class="mobile-label">Finished Good</label>
+                        <select class="f-product">${optionsHtml}</select>
+                    </div>
+                    <div class="field-wrap">
+                        <label class="mobile-label">Qty (Cases)</label>
+                        <input type="number" placeholder="Cases" min="0" class="f-qty">
+                    </div>
+                    <div class="field-wrap">
+                        <label class="mobile-label">Reject (Bottles)</label>
+                        <input type="number" placeholder="Reject" min="0" value="0" class="f-reject">
+                    </div>
+                    <div class="field-wrap">
+                        <label class="mobile-label">Cost (₹)</label>
+                        <input type="number" placeholder="Cost" min="0" step="0.01" class="f-cost">
+                    </div>
                     <button type="button" class="btn-remove-row" onclick="vibrateApp(20); document.getElementById('${id}').remove();">
                         <span class="material-symbols-outlined">delete</span>
                     </button>
@@ -598,26 +614,37 @@
                 const reject = parseInt(row.querySelector('.f-reject').value) || 0;
                 const cost = parseFloat(row.querySelector('.f-cost').value) || 0;
                 
-                if(prodId && qty > 0) {
-                    const product = inventoryProducts.find(p => p.id === prodId);
-                    items.push({ 
-                        finishedId: prodId, 
-                        finishedName: product.name, 
-                        emptyId: product.fillingRecipe.emptyBottleId,
-                        emptyName: product.fillingRecipe.emptyBottleName,
-                        ratio: product.fillingRecipe.qtyPerUnit,
-                        qtyCases: qty, 
-                        rejected: reject, 
-                        cost: cost 
-                    });
-                    totalCost += cost;
-                } else if (prodId || qty > 0 || reject > 0 || cost > 0) {
-                    validItems = false; // Partially filled row
+                const hasData = prodId || qty > 0 || reject > 0 || cost > 0;
+                
+                if (hasData) {
+                    // Check validity: must have selected product, no negative values, and at least some cases OR some rejects recorded
+                    if (prodId && (qty >= 0 && reject >= 0 && cost >= 0) && (qty > 0 || reject > 0)) {
+                        const product = inventoryProducts.find(p => p.id === prodId);
+                        
+                        if (!product || !product.fillingRecipe) {
+                            validItems = false;
+                            return;
+                        }
+
+                        items.push({ 
+                            finishedId: prodId, 
+                            finishedName: product.name, 
+                            emptyId: product.fillingRecipe.emptyBottleId,
+                            emptyName: product.fillingRecipe.emptyBottleName,
+                            ratio: product.fillingRecipe.qtyPerUnit,
+                            qtyCases: qty, 
+                            rejected: reject, 
+                            cost: cost 
+                        });
+                        totalCost += cost;
+                    } else {
+                        validItems = false; // Missing product selection, negative numbers, or missing both quantities
+                    }
                 }
             });
 
-            if(!validItems) { showToast("Please complete all item rows correctly.", "error"); return; }
-            if(items.length === 0) { showToast("Add at least one valid item.", "error"); return; }
+            if(!validItems) { showToast("Please complete all item rows correctly without negative values.", "error"); return; }
+            if(items.length === 0) { showToast("Add at least one valid item to save.", "error"); return; }
 
             const btn = document.getElementById('btnSaveFilling');
             btn.disabled = true; btn.innerHTML = "Processing Stock...";
@@ -643,12 +670,18 @@
                         const finishedRef = doc(db, "inventory", item.finishedId);
                         const emptyRef = doc(db, "inventory", item.emptyId);
                         
+                        // Rejects ONLY affect empty bottles, they are NOT added to finished goods.
                         const emptyToDeduct = (item.qtyCases * item.ratio) + item.rejected;
                         
-                        // Add filled cases
-                        transaction.update(finishedRef, { qty: increment(item.qtyCases), lastUpdated: new Date().toISOString() });
-                        // Deduct empty bottles
-                        transaction.update(emptyRef, { qty: increment(-emptyToDeduct), lastUpdated: new Date().toISOString() });
+                        // Add filled cases (Only valid if > 0)
+                        if (item.qtyCases > 0) {
+                            transaction.update(finishedRef, { qty: increment(item.qtyCases), lastUpdated: new Date().toISOString() });
+                        }
+                        
+                        // Deduct used empty bottles + rejected/wasted empty bottles
+                        if (emptyToDeduct > 0) {
+                            transaction.update(emptyRef, { qty: increment(-emptyToDeduct), lastUpdated: new Date().toISOString() });
+                        }
                     });
                 });
 
@@ -689,7 +722,7 @@
                 await runTransaction(db, async (transaction) => {
                     const logRef = doc(db, "filling_logs", id);
                     
-                    // Reverse Inventory Stocks
+                    // Reverse Inventory Stocks correctly
                     logData.items.forEach(item => {
                         const finishedRef = doc(db, "inventory", item.finishedId);
                         const emptyRef = doc(db, "inventory", item.emptyId);
@@ -697,9 +730,13 @@
                         const emptyToRestore = (item.qtyCases * item.ratio) + item.rejected;
                         
                         // Deduct filled cases back out
-                        transaction.update(finishedRef, { qty: increment(-item.qtyCases), lastUpdated: new Date().toISOString() });
-                        // Add empty bottles back in
-                        transaction.update(emptyRef, { qty: increment(emptyToRestore), lastUpdated: new Date().toISOString() });
+                        if (item.qtyCases > 0) {
+                            transaction.update(finishedRef, { qty: increment(-item.qtyCases), lastUpdated: new Date().toISOString() });
+                        }
+                        // Add empty bottles & rejects back in
+                        if (emptyToRestore > 0) {
+                            transaction.update(emptyRef, { qty: increment(emptyToRestore), lastUpdated: new Date().toISOString() });
+                        }
                     });
 
                     // Delete the log
@@ -784,11 +821,11 @@
                                 <div class="fc-row">
                                     <div style="flex:1;">
                                         <div class="fc-label">${i.finishedName}</div>
-                                        ${i.rejected > 0 ? `<div class="fc-reject">${i.rejected} Empty Rejected</div>` : ''}
+                                        ${i.rejected > 0 ? `<div class="fc-reject">${i.rejected} Empty Bottles Rejected</div>` : ''}
                                     </div>
                                     <div style="text-align: right;">
-                                        <div class="fc-val">+${i.qtyCases} Cases</div>
-                                        <div style="font-size: 0.8rem; color: var(--text-muted);">₹${i.cost.toLocaleString('en-IN')}</div>
+                                        ${i.qtyCases > 0 ? `<div class="fc-val">+${i.qtyCases} Cases</div>` : `<div class="fc-val" style="color:var(--text-muted);">0 Cases</div>`}
+                                        <div style="font-size: 0.8rem; color: var(--text-muted);">₹${(i.cost || 0).toLocaleString('en-IN')}</div>
                                     </div>
                                 </div>
                             `;
