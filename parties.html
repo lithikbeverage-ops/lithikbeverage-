@@ -306,6 +306,23 @@
         </div>
     </div>
 
+    <!-- Mini Popup - Missing Firestore Index Diagnostic UI Linker -->
+    <div class="mini-modal-overlay" id="miniModalIndexError">
+        <div class="mini-modal-content" style="max-width: 460px; width: 92%;">
+            <div style="text-align: center;">
+                <div style="width: 64px; height: 64px; background: rgba(245, 158, 11, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto;">
+                    <span class="material-symbols-outlined" style="font-size: 32px; color: var(--warning-color);">database</span>
+                </div>
+                <h3 style="margin-bottom: 8px; font-size: 1.25rem; color: var(--text-main); font-weight: 700;">Missing Firestore Index</h3>
+                <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 0.9rem; line-height: 1.5;">This layout requires a composite index to link equality constraints with sorting order. Click the button below to provision it directly inside your Firebase Console instance:</p>
+                <div style="margin-bottom: 20px; padding: 14px; background: var(--input-bg); border-radius: 12px; word-break: break-all; text-align: left; border: 1px solid var(--border-color);">
+                    <a id="indexErrorLink" href="#" target="_blank" style="color: var(--primary-color); font-weight: 700; text-decoration: underline; font-size: 0.85rem; display: block; line-height: 1.4;">Extracting Dynamic Index Generation Link...</a>
+                </div>
+                <button type="button" onclick="closeMiniModal('miniModalIndexError')" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main); font-weight: 600; cursor: pointer; transition: all 0.2s;">Close & Retarget</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { app, db } from './config.js';
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
@@ -358,6 +375,22 @@
         };
 
         const formatCurrency = (val) => Number(val).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+        // Advanced Error Tracker & Live URL Interceptor
+        window.handleFirestoreError = function(e, customFallbackMsg) {
+            console.error(customFallbackMsg, e);
+            const errStr = e.toString() || e.message || "";
+            const match = errStr.match(/https:\/\/console\.firebase\.google\.com[^\s]*/);
+            if (match && match[0]) {
+                const targetUrl = match[0].replace(/[.,;)]+$/, ""); 
+                const linkEl = document.getElementById('indexErrorLink');
+                linkEl.href = targetUrl;
+                linkEl.innerText = targetUrl;
+                window.openMiniModal('miniModalIndexError');
+            } else {
+                window.showToast(customFallbackMsg, "error");
+            }
+        };
 
         // Modal Logic
         window.openModal = function(modalId) {
@@ -648,6 +681,11 @@
                             <span class="material-symbols-outlined" style="font-size:32px; display:block; margin-bottom:10px;">cloud_off</span>
                             Failed to load data. Please check your connection or database indexes.
                         </div>`;
+                }
+                
+                // Added to catch the index link and show modal
+                if (window.handleFirestoreError) {
+                    window.handleFirestoreError(error, "Failed to load data. Please check your connection or database indexes.");
                 }
             } finally {
                 isFetching = false;
