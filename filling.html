@@ -74,7 +74,12 @@
         .main-scroll-area { flex: 1; overflow-y: auto; padding: 20px; background-color: var(--bg-body); position: relative; }
         .container-inner { max-width: 800px; margin: 0 auto; width: 100%; }
 
-        .top-actions { display: flex; gap: 12px; margin-bottom: 24px; align-items: center; justify-content: flex-end; }
+        .top-actions { display: flex; gap: 12px; margin-bottom: 24px; align-items: center; justify-content: space-between; width: 100%; }
+        .search-container { position: relative; flex: 1; max-width: 500px; }
+        .search-container input { width: 100%; padding: 12px 16px 12px 42px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); font-size: 0.95rem; font-family: 'Inter', sans-serif; outline: none; transition: all 0.2s; box-shadow: var(--shadow-sm); }
+        .search-container input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
+        .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 20px; pointer-events: none; }
+
         .btn-fab { background: var(--primary-color); color: white; border: none; width: 48px; height: 48px; border-radius: 12px; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: var(--shadow-md); transition: all 0.2s; flex-shrink: 0; }
         .btn-fab:active { transform: scale(0.95); }
 
@@ -91,6 +96,8 @@
         .fc-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 12px; }
         .fc-cost { font-size: 1.25rem; font-weight: 800; color: var(--danger-color); }
         .fc-dc { font-size: 0.8rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; background: var(--input-bg); color: var(--primary-color); border: 1px solid var(--border-color); }
+
+        .loading-indicator { grid-column: 1 / -1; text-align: center; padding: 20px; color: var(--text-muted); font-weight: 500; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
 
         .modal { position: fixed; top: 0; right: -100%; width: 100%; height: 100%; background-color: var(--bg-body); z-index: 2000; transition: right 0.3s ease; overflow-y: auto; padding-bottom: 80px; }
         .modal.active { right: 0; }
@@ -139,9 +146,13 @@
         <div class="layout-container">
             <nav class="sidebar" id="desktop-nav"></nav>
 
-            <div class="main-scroll-area">
+            <div class="main-scroll-area" id="mainScrollArea">
                 <div class="container-inner">
                     <div class="top-actions">
+                        <div class="search-container">
+                            <span class="material-symbols-outlined search-icon">search</span>
+                            <input type="text" id="searchLogs" placeholder="Search by filling company...">
+                        </div>
                         <button class="btn-fab" onclick="openFillingModal()" title="Log New Filling">
                             <span class="material-symbols-outlined">local_shipping</span>
                         </button>
@@ -220,7 +231,7 @@
     <script type="module">
         import { app, db } from './config.js';
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-        import { collection, doc, getDocs, query, orderBy, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+        import { collection, doc, getDocs, query, orderBy, setDoc, serverTimestamp, limit, startAfter, where } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
         // Navigation Setup (Matches your existing app perfectly)
         const navItems = [
@@ -266,11 +277,20 @@
         window.openModal = function(id) { document.getElementById(id).classList.add('active'); history.pushState({modal: id}, '', `#${id}`); };
         window.addEventListener('popstate', (e) => { document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active')); });
 
+        // Pagination and Filtering State State Variables
+        const PAGE_LIMIT = 10;
+        let lastVisibleDoc = null;
+        let isLoadingLogs = false;
+        let hasMoreLogs = true;
+        let currentSearchQuery = '';
+        let searchDebounceTimeout = null;
+
         const auth = getAuth(app);
         onAuthStateChanged(auth, async (user) => {
             if (user) { 
                 document.getElementById('fDate').valueAsDate = new Date();
-                loadFillingLogs(); 
+                setupPaginationAndSearch();
+                loadFillingLogs(false); 
             }
             else window.location.replace('login.html');
         });
@@ -318,13 +338,10 @@
 
                 const newRef = doc(collection(db, "filling_logs"));
                 await setDoc(newRef, payload);
-                
-                // Advanced implementation: This is where you would also trigger 
-                // a Firebase Transaction to alter `inventory` directly.
 
                 showToast("Filling log saved!");
                 history.back();
-                loadFillingLogs();
+                loadFillingLogs(false); // Reload from scratch to show the latest entry
             } catch(e) {
                 console.error(e);
                 showToast("Failed to save log", "error");
@@ -333,17 +350,78 @@
             }
         });
 
-        async function loadFillingLogs() {
+        // Optimized & Paginated Firebase Log Loading Engine
+        async function loadFillingLogs(isAppend = false) {
+            if (isLoadingLogs) return;
+            if (isAppend && !hasMoreLogs) return;
+
+            isLoadingLogs = true;
             const grid = document.getElementById('fillingGrid');
-            grid.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted);">Loading logs...</div>';
+            
+            if (!isAppend) {
+                grid.innerHTML = '<div class="loading-indicator"><span class="material-symbols-outlined">sync</span> Loading logs...</div>';
+                lastVisibleDoc = null;
+                hasMoreLogs = true;
+            } else {
+                removeLoadingIndicator();
+                grid.innerHTML += '<div id="paginationLoading" class="loading-indicator"><span class="material-symbols-outlined">sync</span> Loading more logs...</div>';
+            }
             
             try {
-                const q = query(collection(db, "filling_logs"), orderBy("date", "desc"), limit(20));
+                let q;
+                if (currentSearchQuery) {
+                    // Optimized Prefix Range Filtering Query for Firestore
+                    if (isAppend && lastVisibleDoc) {
+                        q = query(
+                            collection(db, "filling_logs"), 
+                            orderBy("company"), 
+                            where("company", ">=", currentSearchQuery), 
+                            where("company", "<=", currentSearchQuery + "\uf8ff"),
+                            startAfter(lastVisibleDoc),
+                            limit(PAGE_LIMIT)
+                        );
+                    } else {
+                        q = query(
+                            collection(db, "filling_logs"), 
+                            orderBy("company"), 
+                            where("company", ">=", currentSearchQuery), 
+                            where("company", "<=", currentSearchQuery + "\uf8ff"),
+                            limit(PAGE_LIMIT)
+                        );
+                    }
+                } else {
+                    // Standard Chronological Query
+                    if (isAppend && lastVisibleDoc) {
+                        q = query(
+                            collection(db, "filling_logs"), 
+                            orderBy("date", "desc"), 
+                            startAfter(lastVisibleDoc),
+                            limit(PAGE_LIMIT)
+                        );
+                    } else {
+                        q = query(
+                            collection(db, "filling_logs"), 
+                            orderBy("date", "desc"), 
+                            limit(PAGE_LIMIT)
+                        );
+                    }
+                }
+
                 const snap = await getDocs(q);
+                removeLoadingIndicator();
                 
-                if(snap.empty) {
-                    grid.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted);">No filling logs found.</div>';
+                if (snap.empty) {
+                    if (!isAppend) {
+                        grid.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-muted); font-weight:500;">No matching filling logs found.</div>';
+                    }
+                    hasMoreLogs = false;
+                    isLoadingLogs = false;
                     return;
+                }
+
+                lastVisibleDoc = snap.docs[snap.docs.length - 1];
+                if (snap.docs.length < PAGE_LIMIT) {
+                    hasMoreLogs = false;
                 }
 
                 let html = '';
@@ -370,11 +448,53 @@
                         </div>
                     `;
                 });
-                grid.innerHTML = html;
+
+                if (!isAppend) {
+                    grid.innerHTML = html;
+                } else {
+                    grid.innerHTML += html;
+                }
             } catch(e) {
                 console.error(e);
-                grid.innerHTML = '<div style="text-align:center; padding:20px; color:var(--danger-color);">Failed to load logs.</div>';
+                removeLoadingIndicator();
+                if (!isAppend) {
+                    grid.innerHTML = '<div style="text-align:center; padding:20px; color:var(--danger-color);">Failed to load logs.</div>';
+                } else {
+                    showToast("Error loading more logs", "error");
+                }
+            } finally {
+                isLoadingLogs = false;
             }
+        }
+
+        function removeLoadingIndicator() {
+            const activeIndicator = document.getElementById('paginationLoading');
+            if (activeIndicator) activeIndicator.remove();
+        }
+
+        // Setup Observers for Endless Scrolling & Search Input Buffering
+        function setupPaginationAndSearch() {
+            const scrollArea = document.getElementById('mainScrollArea');
+            
+            // Infinite Scroll Listener
+            scrollArea.addEventListener('scroll', () => {
+                if ((scrollArea.scrollTop + scrollArea.clientHeight) >= (scrollArea.scrollHeight - 60)) {
+                    if (!isLoadingLogs && hasMoreLogs) {
+                        loadFillingLogs(true);
+                    }
+                }
+            });
+
+            // Search Bar Input Element with Performance Optimization (Debounce)
+            const searchInput = document.getElementById('searchLogs');
+            searchInput.addEventListener('input', (e) => {
+                clearTimeout(searchDebounceTimeout);
+                
+                searchDebounceTimeout = setTimeout(() => {
+                    currentSearchQuery = e.target.value.trim();
+                    loadFillingLogs(false); 
+                }, 300); // 300ms window prevents excessive database reads during rapid typing
+            });
         }
     </script>
 </body>
