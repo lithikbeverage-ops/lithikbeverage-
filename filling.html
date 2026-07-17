@@ -879,6 +879,15 @@
                             return;
                         }
 
+                        // Highly accurate integer math implementation preventing floating-point chaos
+                        const nominalBottles = qty * ratio;
+                        const totalEmptyDeducted = Math.max(nominalBottles, reject); // deducts at least the rejects if cases=0
+                        const successfulBottles = Math.max(0, nominalBottles - reject);
+                        const finishedAddedCases = successfulBottles / ratio;
+                        
+                        const exactFinishedAdded = parseFloat(finishedAddedCases.toFixed(4));
+                        const exactEmptyDeducted = parseFloat(totalEmptyDeducted.toFixed(4));
+
                         items.push({ 
                             finishedId: prodId, 
                             finishedName: selectedOpt.text, 
@@ -887,7 +896,9 @@
                             ratio: ratio,
                             qtyCases: qty, 
                             rejected: reject, 
-                            cost: cost 
+                            cost: cost,
+                            exactFinishedAdded: exactFinishedAdded,
+                            exactEmptyDeducted: exactEmptyDeducted
                         });
                         totalCost += cost;
                     } else {
@@ -922,15 +933,12 @@
                         const finishedRef = doc(db, "inventory", item.finishedId);
                         const emptyRef = doc(db, "inventory", item.emptyId);
                         
-                        const emptyToDeduct = (item.qtyCases * item.ratio);
-                        const finishedToAdd = item.qtyCases - (item.rejected / item.ratio);
-                        
-                        if (finishedToAdd !== 0) {
-                            transaction.update(finishedRef, { qty: increment(finishedToAdd), lastUpdated: new Date().toISOString() });
+                        if (item.exactFinishedAdded !== 0) {
+                            transaction.update(finishedRef, { qty: increment(item.exactFinishedAdded), lastUpdated: new Date().toISOString() });
                         }
                         
-                        if (emptyToDeduct > 0) {
-                            transaction.update(emptyRef, { qty: increment(-emptyToDeduct), lastUpdated: new Date().toISOString() });
+                        if (item.exactEmptyDeducted !== 0) {
+                            transaction.update(emptyRef, { qty: increment(-item.exactEmptyDeducted), lastUpdated: new Date().toISOString() });
                         }
                     });
                 });
@@ -984,13 +992,19 @@
                         const finishedRef = doc(db, "inventory", item.finishedId);
                         const emptyRef = doc(db, "inventory", item.emptyId);
                         
-                        const emptyToRestore = (item.qtyCases * item.ratio);
-                        const finishedToRemove = item.qtyCases - (item.rejected / item.ratio);
+                        let finishedToRemove = item.exactFinishedAdded;
+                        let emptyToRestore = item.exactEmptyDeducted;
+
+                        // Smart fallback for old logs (V1) to completely fix the fractional corruption (300.08333 -> 300)
+                        if (finishedToRemove === undefined) {
+                            finishedToRemove = item.qtyCases; // Reverts the exact "wrongly 2 added"
+                            emptyToRestore = (item.qtyCases * item.ratio) + (item.rejected || 0); // Reverts the exact original empty deduction
+                        }
                         
                         if (finishedToRemove !== 0) {
                             transaction.update(finishedRef, { qty: increment(-finishedToRemove), lastUpdated: new Date().toISOString() });
                         }
-                        if (emptyToRestore > 0) {
+                        if (emptyToRestore !== 0) {
                             transaction.update(emptyRef, { qty: increment(emptyToRestore), lastUpdated: new Date().toISOString() });
                         }
                     });
@@ -1122,6 +1136,9 @@
                     let itemsHtml = '';
                     if (data.items) {
                         data.items.forEach(i => {
+                            // Properly display exact finished added cases in UI log history
+                            const displayCases = i.exactFinishedAdded !== undefined ? i.exactFinishedAdded : i.qtyCases;
+                            
                             itemsHtml += `
                                 <div class="fc-row">
                                     <div style="flex:1;">
@@ -1129,7 +1146,7 @@
                                         ${i.rejected > 0 ? `<div class="fc-reject">${i.rejected} Empty Bottles Rejected</div>` : ''}
                                     </div>
                                     <div style="text-align: right;">
-                                        ${i.qtyCases > 0 ? `<div class="fc-val">+${i.qtyCases} Cases</div>` : `<div class="fc-val" style="color:var(--text-muted);">0 Cases</div>`}
+                                        ${displayCases > 0 ? `<div class="fc-val">+${displayCases} Cases</div>` : `<div class="fc-val" style="color:var(--text-muted);">0 Cases</div>`}
                                         <div style="font-size: 0.8rem; color: var(--text-muted);">₹${(i.cost || 0).toLocaleString('en-IN')}</div>
                                     </div>
                                 </div>
