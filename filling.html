@@ -525,9 +525,9 @@
         let hasMoreRecipes = true;
         let isLoadingRecipes = false;
 
-        // Auto Select Today's Date Filter (Local Timezone Fix)
+        // Auto Select Today's Date Filter (Indian Standard Time Fix)
         const todayObj = new Date();
-        let filterDate = new Date(todayObj.getTime() - (todayObj.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+        let filterDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(todayObj);
 
         // Ensure UI updates to show filter is active instantly
         document.addEventListener('DOMContentLoaded', () => {
@@ -542,9 +542,9 @@
             const mobIcon = document.getElementById('mobileFilterIcon');
             if(mobIcon) mobIcon.classList.add('active-filter');
             
-            // Set form default date
+            // Set form default date to IST today
             const fDateInput = document.getElementById('fDate');
-            if(fDateInput) fDateInput.valueAsDate = new Date();
+            if(fDateInput) fDateInput.value = filterDate;
         });
 
         // Date Filter Logic
@@ -1223,11 +1223,11 @@
 
                 let html = '';
                 newItems.forEach(data => {
-                    // Date and Time Formatting
-                    const dFormatted = new Date(data.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric'});
+                    // Date and Time Formatting strictly enforced for IST
+                    const dFormatted = new Date(data.date).toLocaleDateString('en-US', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short', year: 'numeric'});
                     let timeStr = "";
                     if (data.createdAt && data.createdAt.toDate) {
-                        timeStr = data.createdAt.toDate().toLocaleTimeString('en-US', { hour: '2-digit', minute:'2-digit', hour12: true });
+                        timeStr = data.createdAt.toDate().toLocaleTimeString('en-US', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute:'2-digit', hour12: true });
                     }
                     
                     let itemsHtml = '';
