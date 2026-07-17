@@ -88,7 +88,7 @@
         nav.sidebar .nav-item:hover, nav.sidebar .nav-item.active { background-color: rgba(59, 130, 246, 0.05); color: var(--primary-color); border-right: 3px solid var(--primary-color); }
         
         nav.bottom-nav { display: flex; background-color: var(--bg-nav); border-top: 1px solid var(--border-color); min-height: 65px; height: calc(65px + env(safe-area-inset-bottom)); width: 100%; overflow-x: auto; overflow-y: hidden; scroll-behavior: smooth; padding: 0 10px; flex-shrink: 0; padding-bottom: env(safe-area-inset-bottom); position: relative; z-index: 100; }
-        nav.bottom-nav .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none; color: var(--text-muted); min-width: 72px; padding: 8px 4px; gap: 4px; font-size: 0.75rem; font-weight: 600; transition: all 0.2s; cursor: pointer; }
+        nav.bottom-nav .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none; color: var(--text-muted); min-width: 72px; flex: 1; padding: 8px 4px; gap: 4px; font-size: 0.75rem; font-weight: 600; transition: all 0.2s; cursor: pointer; }
         nav.bottom-nav .nav-item.active { color: var(--primary-color); }
         .nav-icon { width: 24px; height: 24px; fill: currentColor; }
 
@@ -333,7 +333,7 @@
             const isActive = currentPath === item.path ? 'active' : '';
             const html = `
                 <a href="${item.path}" class="nav-item ${isActive}">
-                    <svg class="nav-icon" viewBox="0 0 24 24">${item.icon}</svg>
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">${item.icon}</svg>
                     <span>${item.name}</span>
                 </a>
             `;
