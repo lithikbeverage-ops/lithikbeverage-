@@ -157,8 +157,9 @@
         .form-group { padding: 20px; max-width: 800px; margin: 0 auto; }
         .input-wrapper { margin-bottom: 20px; }
         .input-wrapper label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 0.85em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-        .input-wrapper input, .input-wrapper select { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main); font-size: 1rem; font-family: 'Inter', sans-serif; outline: none; transition: all 0.2s ease; }
-        .input-wrapper input:focus, .input-wrapper select:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
+        .input-wrapper input, .input-wrapper select, .input-wrapper textarea { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main); font-size: 1rem; font-family: 'Inter', sans-serif; outline: none; transition: all 0.2s ease; }
+        .input-wrapper textarea { resize: vertical; min-height: 80px; }
+        .input-wrapper input:focus, .input-wrapper select:focus, .input-wrapper textarea:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
         .input-wrapper input:disabled { opacity: 0.7; cursor: not-allowed; }
         .row-inputs { display: flex; gap: 16px; }
         .row-inputs > div { flex: 1; }
@@ -239,6 +240,7 @@
                         <span class="material-symbols-outlined" style="font-size: 20px;">close</span>
                     </button>
                 </div>
+                <span class="material-symbols-outlined" style="font-size: 26px; color: var(--primary-color); cursor: pointer; padding: 6px; background: rgba(30, 64, 175, 0.1); border-radius: 10px; margin-right: 4px;" onclick="vibrateApp(20); openMachinesModal()" title="Machines Master">settings_suggest</span>
                 <span class="material-symbols-outlined" style="font-size: 26px; color: var(--primary-color); cursor: pointer; padding: 6px; background: rgba(30, 64, 175, 0.1); border-radius: 10px;" onclick="vibrateApp(20); openRecipeMaster()" title="Recipe Master">precision_manufacturing</span>
             </div>
         </header>
@@ -272,6 +274,7 @@
         <nav class="bottom-nav" id="mobile-nav"></nav>
     </div>
 
+    <!-- Production Log Modal -->
     <div class="modal" id="modalProduction">
         <div class="modal-header">
             <div style="display: flex; align-items: center; gap: 15px;">
@@ -297,6 +300,19 @@
                 </div>
             </div>
 
+            <div class="row-inputs">
+                <div class="input-wrapper">
+                    <label>Machine Selector *</label>
+                    <select id="pdMachine">
+                        <option value="" disabled selected>Select machine...</option>
+                    </select>
+                </div>
+                <div class="input-wrapper">
+                    <label>Operator Name *</label>
+                    <input type="text" id="pdOperator" placeholder="e.g. John Doe">
+                </div>
+            </div>
+
             <div class="input-wrapper">
                 <label>Finished Product Created *</label>
                 <select id="pdProduct" onchange="handleProductSelection()">
@@ -304,9 +320,36 @@
                     </select>
             </div>
 
+            <div class="row-inputs">
+                <div class="input-wrapper">
+                    <label>Quantity Produced *</label>
+                    <input type="number" id="pdQty" placeholder="0" min="1" oninput="calculateRawMaterials()">
+                </div>
+                <div class="input-wrapper">
+                    <label>Production Target</label>
+                    <input type="number" id="pdTarget" placeholder="0" min="1">
+                </div>
+            </div>
+
+            <div class="row-inputs">
+                <div class="input-wrapper">
+                    <label>Bottle Damage</label>
+                    <input type="number" id="pdBottleDamage" placeholder="0" min="0" value="0">
+                </div>
+                <div class="input-wrapper">
+                    <label>Preform Damage</label>
+                    <input type="number" id="pdPreformDamage" placeholder="0" min="0" value="0">
+                </div>
+            </div>
+
             <div class="input-wrapper">
-                <label>Quantity Produced *</label>
-                <input type="number" id="pdQty" placeholder="0" min="1" oninput="calculateRawMaterials()">
+                <label>Timing (e.g. Shift 1 / 9AM-5PM)</label>
+                <input type="text" id="pdTiming" placeholder="Enter timing details">
+            </div>
+
+            <div class="input-wrapper">
+                <label>Remarks / Notes</label>
+                <textarea id="pdRemarks" placeholder="Any additional observations..."></textarea>
             </div>
 
             <label style="display: block; margin-bottom: 8px; margin-top: 24px; color: var(--text-muted); font-size: 0.85em; font-weight: 600; text-transform: uppercase;">Raw Materials to Deduct</label>
@@ -332,6 +375,33 @@
         </div>
     </div>
 
+    <!-- Machines Setup Modal -->
+    <div class="modal" id="modalMachines">
+        <div class="modal-header">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="close-modal" onclick="history.back()"><span class="material-symbols-outlined">arrow_back</span></button>
+                <h2>Manage Machines</h2>
+            </div>
+        </div>
+        <div class="form-group">
+            <div style="background: var(--bg-surface); padding: 16px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 24px; display: flex; gap: 10px; align-items: flex-end;">
+                <div class="input-wrapper" style="flex: 1; margin-bottom: 0;">
+                    <label>New Machine Name</label>
+                    <input type="text" id="newMachineName" placeholder="e.g. Machine 1">
+                </div>
+                <button class="btn-primary" style="width: auto; padding: 14px; margin: 0; border-radius: 12px;" onclick="vibrateApp(20); addMachine()">
+                    <span class="material-symbols-outlined" style="font-size: 20px;">add</span>
+                </button>
+            </div>
+            
+            <label style="display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 0.85em; font-weight: 600; text-transform: uppercase;">Registered Machines</label>
+            <div class="items-section" id="machinesListContainer">
+                <!-- Dynamically injected -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Recipe Master Modal -->
     <div class="modal" id="modalRecipeMaster">
         <div class="modal-header">
             <div style="display: flex; align-items: center; gap: 15px;">
@@ -350,6 +420,7 @@
         </div>
     </div>
 
+    <!-- Recipe Builder Modal -->
     <div class="modal" id="modalRecipeBuilder">
         <div class="modal-header">
             <div style="display: flex; align-items: center; gap: 15px;">
@@ -407,13 +478,14 @@
     <script type="module">
         import { app, db } from './config.js';
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-        import { collection, doc, getDocs, query, orderBy, limit, startAfter, where, writeBatch, serverTimestamp, increment, runTransaction, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+        import { collection, doc, getDoc, setDoc, getDocs, query, orderBy, limit, startAfter, where, writeBatch, serverTimestamp, increment, runTransaction, updateDoc, deleteDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
-        // Navigation Setup (Identical to purchase.html)
+        // Navigation Setup (Updated to match full structure)
         const navItems = [
             { name: 'Dashboard', path: 'index.html', icon: '<path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>' },
             { name: 'Billing', path: 'bill.html', icon: '<path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/>' },
             { name: 'Production', path: 'production.html', icon: '<path d="M19.36 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.36 8.04A5.994 5.994 0 000 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.64-4.96zM10 17l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>' },
+            { name: 'Filling', path: 'filling.html', icon: '<path d="M12 2c-5.33 0-8 2.67-8 4v12c0 1.33 2.67 4 8 4s8-2.67 8-4V6c0-1.33-2.67-4-8-4zm0 2c4.42 0 6 1.5 6 2s-1.58 2-6 2-6-1.5-6-2 1.58-2 6-2z"/>' },
             { name: 'Inventory', path: 'inventory.html', icon: '<path d="M20 2H4c-1.1 0-2 .9-2 2v3.01c0 .72.43 1.34 1 1.69V20c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8.7c.57-.35 1-.97 1-1.69V4c0-1.1-.9-2-2-2zm-5 12H9v-2h6v2zm5-7H4V4h16v3z"/>' },
             { name: 'Purchase', path: 'purchase.html', icon: '<path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>' },
             { name: 'Sales', path: 'sales.html', icon: '<path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>' },
@@ -486,8 +558,9 @@
         // Global Variables
         let currentUser = null;
         let masterRawGoods = [];
-        let inventoryProducts = []; // Stores inventory items (both with and without recipes)
+        let inventoryProducts = []; 
         let productionCache = [];
+        let machineList = [];
         let lastVisibleDoc = null;
         let isFetching = false;
         let hasMore = true;
@@ -526,10 +599,10 @@
                 currentUser = user;
                 document.getElementById('pdDate').valueAsDate = new Date();
                 
-                // Fetch Godowns concurrently to make the app fast
                 await Promise.all([
                     fetchMasterRawGoods(),
-                    fetchInventoryProducts()
+                    fetchInventoryProducts(),
+                    fetchMachines()
                 ]);
                 
                 loadProduction();
@@ -550,27 +623,101 @@
 
         async function fetchInventoryProducts() {
             try {
-                // Fetch items from 'inventory' collection. (We filter UI to show only those that need/have recipes)
                 const q = query(collection(db, "inventory"), orderBy("name"));
                 const snap = await getDocs(q);
                 inventoryProducts = [];
                 snap.forEach(doc => inventoryProducts.push({ id: doc.id, ...doc.data() }));
             } catch (err) { console.error("Error fetching inventory products:", err); }
         }
+        
+        async function fetchMachines() {
+            try {
+                const docSnap = await getDoc(doc(db, "settings", "machines"));
+                if (docSnap.exists() && docSnap.data().list) {
+                    machineList = docSnap.data().list;
+                } else {
+                    await setDoc(doc(db, "settings", "machines"), { list: [] }, { merge: true });
+                    machineList = [];
+                }
+                populateMachineDropdown();
+            } catch (err) { console.error("Error fetching machines:", err); }
+        }
 
         // ==========================================
-        // 1. RECIPE MASTER LOGIC
+        // 1. MACHINES MANAGEMENT
+        // ==========================================
+        window.openMachinesModal = function() {
+            vibrateApp(20);
+            renderMachinesList();
+            openModal('modalMachines');
+        };
+
+        function renderMachinesList() {
+            const container = document.getElementById('machinesListContainer');
+            if (machineList.length === 0) {
+                container.innerHTML = '<div style="padding: 16px; text-align: center; color: var(--text-muted); font-size: 0.9rem;">No machines added yet.</div>';
+                return;
+            }
+            
+            container.innerHTML = machineList.map((m, index) => `
+                <div class="item-row" style="grid-template-columns: 1fr auto;">
+                    <div style="font-weight: 600; color: var(--text-main);">${m}</div>
+                    <button class="btn-remove-row" onclick="vibrateApp(20); deleteMachine('${m}')">
+                        <span class="material-symbols-outlined">delete</span>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function populateMachineDropdown() {
+            const sel = document.getElementById('pdMachine');
+            let html = '<option value="" disabled selected>Select machine...</option>';
+            machineList.forEach(m => { html += `<option value="${m}">${m}</option>`; });
+            if(sel) sel.innerHTML = html;
+        }
+
+        window.addMachine = async function() {
+            const input = document.getElementById('newMachineName');
+            const name = input.value.trim();
+            if(!name) return;
+            if(machineList.includes(name)) { showToast("Machine already exists", "error"); return; }
+            
+            try {
+                await updateDoc(doc(db, "settings", "machines"), {
+                    list: arrayUnion(name)
+                });
+                machineList.push(name);
+                input.value = '';
+                renderMachinesList();
+                populateMachineDropdown();
+                showToast("Machine added");
+            } catch(e) { console.error(e); showToast("Error adding machine", "error"); }
+        }
+
+        window.deleteMachine = async function(name) {
+            try {
+                await updateDoc(doc(db, "settings", "machines"), {
+                    list: arrayRemove(name)
+                });
+                machineList = machineList.filter(m => m !== name);
+                renderMachinesList();
+                populateMachineDropdown();
+                showToast("Machine deleted");
+            } catch(e) { console.error(e); showToast("Error deleting machine", "error"); }
+        }
+
+        // ==========================================
+        // 2. RECIPE MASTER LOGIC
         // ==========================================
         window.openRecipeMaster = async function() {
             vibrateApp(20);
-            await fetchInventoryProducts(); // Refresh list to get latest inventory & recipes
+            await fetchInventoryProducts(); 
             renderRecipeGrid();
             openModal('modalRecipeMaster');
         };
 
         function renderRecipeGrid() {
             const grid = document.getElementById('recipeGrid');
-            // Filter inventory items that HAVE a recipe defined
             const recipes = inventoryProducts.filter(p => p.recipe && p.recipe.length > 0);
             
             if(recipes.length === 0) {
@@ -604,7 +751,6 @@
             document.getElementById('recipeItemsContainer').innerHTML = '';
             const selectInv = document.getElementById('rbInventorySelect');
             
-            // Populate Dropdown
             let optionsHtml = '<option value="" disabled selected>Select from Inventory...</option>';
             inventoryProducts.forEach(p => {
                 optionsHtml += `<option value="${p.id}">${p.name} ${p.model ? '('+p.model+')' : ''}</option>`;
@@ -615,7 +761,7 @@
                 currentEditingRecipeId = editInvId;
                 document.getElementById('recipeBuilderTitle').innerText = "Edit Recipe";
                 selectInv.value = editInvId;
-                selectInv.disabled = true; // Don't let them change the core product while editing
+                selectInv.disabled = true; 
                 
                 const product = inventoryProducts.find(p => p.id === editInvId);
                 if (product && product.recipe) {
@@ -679,20 +825,18 @@
             btn.disabled = true; btn.innerHTML = "Saving...";
 
             try {
-                // Update the inventory document directly with the recipe array
                 const docRef = doc(db, "inventory", invId);
                 await updateDoc(docRef, { 
                     recipe: items,
-                    hasRecipe: true, // helpful for querying later if needed
+                    hasRecipe: true, 
                     lastUpdated: new Date().toISOString()
                 });
                 
                 showToast("Recipe saved successfully!", "success");
                 
-                // Refresh local cache and UI
                 await fetchInventoryProducts();
                 renderRecipeGrid();
-                history.back(); // close builder
+                history.back(); 
             } catch (err) {
                 console.error(err);
                 showToast("Failed to save recipe", "error");
@@ -703,14 +847,13 @@
         });
 
         // ==========================================
-        // 2. DAILY PRODUCTION LOGGING
+        // 3. DAILY PRODUCTION LOGGING
         // ==========================================
         window.openProductionModal = function(editId = null) {
             document.getElementById('calcContainer').innerHTML = '<div style="padding: 30px; text-align: center; color: var(--text-muted); font-size: 0.9rem;">Select a product and enter quantity to auto-calculate required raw materials.</div>';
             
             const selectProd = document.getElementById('pdProduct');
             let optionsHtml = '<option value="" disabled selected>Select configured product...</option>';
-            // Only show products that have a recipe configured
             const availableProducts = inventoryProducts.filter(p => p.recipe && p.recipe.length > 0);
             availableProducts.forEach(p => {
                 optionsHtml += `<option value="${p.id}">${p.name}</option>`;
@@ -718,7 +861,6 @@
             selectProd.innerHTML = optionsHtml;
 
             if (editId) {
-                // Edit existing production run (Complex to rollback, but implemented here via transaction)
                 const data = productionCache.find(p => p.id === editId);
                 if(!data) return;
                 
@@ -727,22 +869,34 @@
                 document.getElementById('editProdId').value = editId;
                 document.getElementById('pdBatchNo').value = data.batchNo;
                 document.getElementById('pdDate').value = data.date;
+                document.getElementById('pdMachine').value = data.machine || '';
+                document.getElementById('pdOperator').value = data.operator || '';
+                document.getElementById('pdTarget').value = data.target || '';
+                document.getElementById('pdBottleDamage').value = data.bottleDamage || 0;
+                document.getElementById('pdPreformDamage').value = data.preformDamage || 0;
+                document.getElementById('pdTiming').value = data.timing || '';
+                document.getElementById('pdRemarks').value = data.remarks || '';
                 
                 selectProd.value = data.inventoryId;
-                selectProd.disabled = true; // Prevent changing product type on edit to avoid complex rollback math
+                selectProd.disabled = true; 
                 
                 document.getElementById('pdQty').value = data.qtyProduced;
                 
-                // Trigger calculation but populate with existing wastage
                 handleProductSelection(data); 
 
             } else {
-                // New
                 document.getElementById('modalProdTitle').innerText = "Log Production Batch";
                 document.getElementById('btnDeleteProduction').style.display = "none";
                 document.getElementById('editProdId').value = '';
-                document.getElementById('pdBatchNo').value = `PRD-${Date.now().toString().slice(-6)}`; // Auto generate nice batch ID
+                document.getElementById('pdBatchNo').value = `PRD-${Date.now().toString().slice(-6)}`; 
                 document.getElementById('pdDate').valueAsDate = new Date();
+                document.getElementById('pdMachine').value = '';
+                document.getElementById('pdOperator').value = '';
+                document.getElementById('pdTarget').value = '';
+                document.getElementById('pdBottleDamage').value = 0;
+                document.getElementById('pdPreformDamage').value = 0;
+                document.getElementById('pdTiming').value = '';
+                document.getElementById('pdRemarks').value = '';
                 document.getElementById('pdQty').value = '';
                 selectProd.disabled = false;
             }
@@ -750,7 +904,6 @@
             openModal('modalProduction');
         };
 
-        // The Auto-Calculation Engine
         window.handleProductSelection = function(existingData = null) {
             calculateRawMaterials(existingData);
         };
@@ -774,7 +927,6 @@
             product.recipe.forEach((r, idx) => {
                 const reqQty = r.qty * qtyProd;
                 
-                // If editing, find the previously saved wastage for this specific raw material
                 let savedWastage = 0;
                 if (existingData && existingData.rawUsed) {
                     const matchedOld = existingData.rawUsed.find(old => old.rawGoodId === r.rawGoodId);
@@ -803,7 +955,6 @@
             totalEl.innerText = baseReq + waste;
         };
 
-        // Save Production Transaction
         document.getElementById('btnSaveProduction').addEventListener('click', async () => {
             vibrateApp(30);
             const editId = document.getElementById('editProdId').value;
@@ -811,9 +962,17 @@
             const dateStr = document.getElementById('pdDate').value;
             const invId = document.getElementById('pdProduct').value;
             const qtyProduced = parseInt(document.getElementById('pdQty').value);
+            
+            const machine = document.getElementById('pdMachine').value;
+            const operator = document.getElementById('pdOperator').value.trim();
+            const target = parseInt(document.getElementById('pdTarget').value) || 0;
+            const bottleDamage = parseInt(document.getElementById('pdBottleDamage').value) || 0;
+            const preformDamage = parseInt(document.getElementById('pdPreformDamage').value) || 0;
+            const timing = document.getElementById('pdTiming').value.trim();
+            const remarks = document.getElementById('pdRemarks').value.trim();
 
-            if (!batchNo || !dateStr || !invId || isNaN(qtyProduced) || qtyProduced <= 0) {
-                showToast("Please fill all required fields correctly.", "error"); return;
+            if (!batchNo || !dateStr || !invId || isNaN(qtyProduced) || qtyProduced <= 0 || !machine || !operator) {
+                showToast("Please fill all required fields correctly (Batch, Date, Machine, Operator, Product, Qty).", "error"); return;
             }
 
             const product = inventoryProducts.find(p => p.id === invId);
@@ -839,6 +998,10 @@
             const btn = document.getElementById('btnSaveProduction');
             btn.disabled = true; btn.innerHTML = "Processing Factory Logistics...";
 
+            // Determine identifiers for stock deduction logic heuristically
+            const preformItem = masterRawGoods.find(g => g.name.toLowerCase().includes('preform'));
+            const bottleItem = masterRawGoods.find(g => g.name.toLowerCase().includes('bottle') && !g.name.toLowerCase().includes('cap'));
+
             try {
                 await runTransaction(db, async (transaction) => {
                     const isUpdate = !!editId;
@@ -848,6 +1011,13 @@
                     const payload = {
                         batchNo,
                         date: dateStr,
+                        machine,
+                        operator,
+                        target,
+                        bottleDamage,
+                        preformDamage,
+                        timing,
+                        remarks,
                         inventoryId: invId,
                         productName: product.name,
                         qtyProduced,
@@ -860,43 +1030,56 @@
                         const oldData = productionCache.find(p => p.id === editId);
                         transaction.update(prodRef, payload);
 
-                        // 1. Revert Finished Goods
                         transaction.update(invRef, { qty: increment(-oldData.qtyProduced) });
-                        // 2. Add New Finished Goods
                         transaction.update(invRef, { qty: increment(qtyProduced), lastUpdated: new Date().toISOString() });
 
-                        // 3. Revert Old Raw Materials
                         oldData.rawUsed.forEach(oldRaw => {
                             const rawRef = doc(db, "raw_goods_master", oldRaw.rawGoodId);
                             transaction.update(rawRef, { currentStock: increment(oldRaw.totalDeducted) });
                         });
-                        // 4. Deduct New Raw Materials
+                        if (oldData.preformDamage > 0 && preformItem) {
+                            transaction.update(doc(db, "raw_goods_master", preformItem.id), { currentStock: increment(oldData.preformDamage) });
+                        }
+                        if (oldData.bottleDamage > 0 && bottleItem) {
+                            transaction.update(doc(db, "raw_goods_master", bottleItem.id), { currentStock: increment(oldData.bottleDamage) });
+                        }
+
                         rawUsed.forEach(newRaw => {
                             const rawRef = doc(db, "raw_goods_master", newRaw.rawGoodId);
                             transaction.update(rawRef, { currentStock: increment(-newRaw.totalDeducted), lastUpdated: new Date().toISOString() });
                         });
+                        if (preformItem && preformDamage > 0) {
+                            transaction.update(doc(db, "raw_goods_master", preformItem.id), { currentStock: increment(-preformDamage) });
+                        }
+                        if (bottleItem && bottleDamage > 0) {
+                            transaction.update(doc(db, "raw_goods_master", bottleItem.id), { currentStock: increment(-bottleDamage) });
+                        }
 
                     } else {
-                        // New Creation
                         payload.createdAt = serverTimestamp();
                         payload.createdBy = currentUser.displayName || "Manager";
                         transaction.set(prodRef, payload);
 
-                        // 1. Add Finished Goods to Inventory
                         transaction.update(invRef, { qty: increment(qtyProduced), lastUpdated: new Date().toISOString() });
 
-                        // 2. Deduct Raw Materials from Godown
                         rawUsed.forEach(newRaw => {
                             const rawRef = doc(db, "raw_goods_master", newRaw.rawGoodId);
                             transaction.update(rawRef, { currentStock: increment(-newRaw.totalDeducted), lastUpdated: new Date().toISOString() });
                         });
+                        
+                        // Deduct Extra specific damages from general master pool if identified
+                        if (preformItem && preformDamage > 0) {
+                            transaction.update(doc(db, "raw_goods_master", preformItem.id), { currentStock: increment(-preformDamage), lastUpdated: new Date().toISOString() });
+                        }
+                        if (bottleItem && bottleDamage > 0) {
+                            transaction.update(doc(db, "raw_goods_master", bottleItem.id), { currentStock: increment(-bottleDamage), lastUpdated: new Date().toISOString() });
+                        }
                     }
                 });
 
                 showToast(`Production ${editId ? 'updated' : 'logged'} successfully!`, "success");
                 history.back();
                 
-                // Refresh data
                 await fetchInventoryProducts();
                 await fetchMasterRawGoods();
                 currentSearch = '';
@@ -912,7 +1095,6 @@
             }
         });
 
-        // Delete Production Transaction
         window.executeDeleteProduction = async function() {
             vibrateApp(30);
             const id = document.getElementById('editProdId').value;
@@ -923,22 +1105,29 @@
 
             const btn = document.getElementById('btnConfirmDeleteProduction');
             btn.disabled = true; btn.innerText = "Reversing...";
+            
+            const preformItem = masterRawGoods.find(g => g.name.toLowerCase().includes('preform'));
+            const bottleItem = masterRawGoods.find(g => g.name.toLowerCase().includes('bottle') && !g.name.toLowerCase().includes('cap'));
 
             try {
                 await runTransaction(db, async (transaction) => {
                     const prodRef = doc(db, "production", id);
                     const invRef = doc(db, "inventory", existingData.inventoryId);
                     
-                    // 1. Revert Finished Goods (subtract what was produced)
                     transaction.update(invRef, { qty: increment(-existingData.qtyProduced), lastUpdated: new Date().toISOString() });
 
-                    // 2. Revert Raw Materials (add back what was deducted)
                     existingData.rawUsed.forEach(oldRaw => {
                         const rawRef = doc(db, "raw_goods_master", oldRaw.rawGoodId);
                         transaction.update(rawRef, { currentStock: increment(oldRaw.totalDeducted), lastUpdated: new Date().toISOString() });
                     });
+                    
+                    if (existingData.preformDamage > 0 && preformItem) {
+                        transaction.update(doc(db, "raw_goods_master", preformItem.id), { currentStock: increment(existingData.preformDamage) });
+                    }
+                    if (existingData.bottleDamage > 0 && bottleItem) {
+                        transaction.update(doc(db, "raw_goods_master", bottleItem.id), { currentStock: increment(existingData.bottleDamage) });
+                    }
 
-                    // 3. Delete Log
                     transaction.delete(prodRef);
                 });
 
@@ -960,9 +1149,8 @@
             }
         };
 
-
         // ==========================================
-        // 3. FEED / LISTING LOGIC
+        // 4. FEED / LISTING LOGIC
         // ==========================================
         function renderSkeletons() {
             const grid = document.getElementById('productionGrid');
@@ -1063,6 +1251,7 @@
 
         function generateCardHTML(item) {
             const d = new Date(item.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric'});
+            const displayMachine = item.machine ? `<span style="display:inline-flex; align-items:center; gap: 4px; background: rgba(30, 64, 175, 0.08); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; color: var(--primary-color);"><span class="material-symbols-outlined" style="font-size:14px;">settings</span> ${item.machine}</span>` : '';
             
             return `
                 <div class="production-card" onclick="vibrateApp(20); openProductionModal('${item.id}')">
@@ -1072,7 +1261,9 @@
                     </div>
                     <div class="pc-details">
                         Product: <strong>${item.productName}</strong><br>
-                        Raw Materials Used: <strong>${item.rawUsed ? item.rawUsed.length : 0} Types</strong>
+                        Raw Materials Used: <strong>${item.rawUsed ? item.rawUsed.length : 0} Types</strong><br>
+                        ${item.operator ? `Operator: <strong>${item.operator}</strong><br>` : ''}
+                        ${displayMachine}
                     </div>
                     <div class="pc-footer">
                         <div class="pc-qty">+${(item.qtyProduced || 0).toLocaleString('en-IN')}</div>
