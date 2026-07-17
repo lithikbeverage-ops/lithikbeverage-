@@ -160,7 +160,6 @@
         .toast-msg.success { background: var(--success-color); }
         .toast-msg.show { display: flex; opacity: 1; transform: translate(-50%, 0); }
 
-        /* New additions for Date Filter and Loader */
         .header-date-picker {
             padding: 8px 12px;
             border-radius: 10px;
@@ -199,7 +198,6 @@
             .item-row > :nth-child(4) { grid-column: 1; } /* Cost */
             .item-row > :nth-child(5) { grid-column: 2; justify-self: end; align-self: end; } /* Remove btn */
 
-            /* Mobile tweaks for header date filter */
             .header-date-picker { position: absolute; left: 0; top: 0; width: 38px; height: 38px; opacity: 0; z-index: 5; padding: 0; margin: 0; }
             .mobile-filter-icon { display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main); transition: all 0.2s; }
             .mobile-filter-icon.active-filter { background: rgba(30, 64, 175, 0.05); color: var(--primary-color); border-color: var(--primary-color); }
@@ -249,7 +247,6 @@
                         <!-- Loaded dynamically -->
                     </div>
 
-                    <!-- Scroll Loader added -->
                     <div id="scrollLoader">
                         <span class="skeleton" style="width:16px; height:16px; border-radius:50%;"></span> Loading records...
                     </div>
@@ -291,8 +288,8 @@
             <div class="items-section">
                 <div class="items-header">
                     <div style="flex: 2;">Finished Product (Recipe)</div>
-                    <div style="flex: 1; text-align: center;">Qty (Cases)</div>
-                    <div style="flex: 1; text-align: center;">Reject (Bottles)</div>
+                    <div style="flex: 1; text-align: center;">Qty (Cases/Units)</div>
+                    <div style="flex: 1; text-align: center;">Reject (Pieces)</div>
                     <div style="flex: 1; text-align: center;">Cost (₹)</div>
                     <div style="width: 42px;"></div>
                 </div>
@@ -347,7 +344,7 @@
             <input type="hidden" id="editRecipeInvId">
             
             <div class="input-wrapper">
-                <label>Select Finished Good (e.g. 500ML Filled Box) *</label>
+                <label>Select Finished Good (e.g. 500ML Filled Case/Box) *</label>
                 <select id="rbFinishedGood" onchange="handleDropdownChange(this, 'all')">
                     <option value="" disabled selected>Select from Inventory...</option>
                 </select>
@@ -363,8 +360,14 @@
                     </select>
                 </div>
                 <div class="input-wrapper" style="margin-bottom: 0;">
-                    <label>Quantity per 1 Unit of Finished Good *</label>
-                    <input type="number" id="rbQtyRatio" placeholder="e.g. 24" min="1">
+                    <label>Empty Pieces needed per 1 Case/Unit of Finished Good *</label>
+                    <input type="number" id="rbQtyRatio" placeholder="e.g. 24 (Pieces inside 1 Case)" min="1">
+                </div>
+                <!-- FIX ADDED HERE -->
+                <div class="input-wrapper" style="margin-bottom: 0; margin-top: 20px;">
+                    <label>Pieces per 1 Unit of Empty Material Stock *</label>
+                    <input type="number" id="rbBottlesPerEmpty" placeholder="e.g. 1 for singles, 24 for packs" min="1" value="1">
+                    <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 6px;">Required to accurately deduct stock when individual pieces are rejected. (Enter 1 if empty stock is in Singles, 24 if in Packs of 24)</small>
                 </div>
             </div>
 
@@ -505,7 +508,6 @@
         let searchDebounceTimeout = null;
         let itemsCounter = 0;
 
-        // Optimized Pagination Trackers
         let ddCursors = {}; 
         let lastRecipeDoc = null;
         let hasMoreRecipes = true;
@@ -546,7 +548,7 @@
         });
 
         // ==========================================
-        // 0. PAGINATED DROPDOWNS LOGIC (FIREBASE READ OPTIMIZATION)
+        // 0. PAGINATED DROPDOWNS LOGIC
         // ==========================================
         window.handleDropdownChange = function(selectElement, type) {
             if (selectElement.value === "LOAD_MORE") {
@@ -570,7 +572,6 @@
             try {
                 let qConstraints = [];
                 if (type === 'recipes') {
-                    // Requires setting hasFillingRecipe = true in DB for highly optimized reading
                     qConstraints.push(where("hasFillingRecipe", "==", true));
                 }
                 qConstraints.push(orderBy("name"));
@@ -593,6 +594,8 @@
                         opt.setAttribute('data-empty-id', p.fillingRecipe.emptyBottleId);
                         opt.setAttribute('data-empty-name', p.fillingRecipe.emptyBottleName);
                         opt.setAttribute('data-ratio', p.fillingRecipe.qtyPerUnit);
+                        // FIXED: Include the new parameter to calculate fractional deductions
+                        opt.setAttribute('data-bottles-per-empty', p.fillingRecipe.bottlesPerEmpty || 1); 
                     }
                     sel.appendChild(opt);
                 });
@@ -676,10 +679,10 @@
                                     <span class="material-symbols-outlined" style="font-size: 18px;">delete</span>
                                 </button>
                             </div>
-                            <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase;">Uses (Empty Bottles):</div>
+                            <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase;">Uses (Empty Pieces):</div>
                             <div class="recipe-item">
                                 <span>${rData.fillingRecipe.emptyBottleName}</span>
-                                <div>${rData.fillingRecipe.qtyPerUnit} Units per Case</div>
+                                <div>${rData.fillingRecipe.qtyPerUnit} Pieces per Case/Unit</div>
                             </div>
                         </div>
                     `;
@@ -698,7 +701,6 @@
             }
         }
 
-        // Infinite scroll for Recipe Master
         document.getElementById('recipeMasterScrollArea').addEventListener('scroll', function() {
             if ((this.scrollTop + this.clientHeight) >= (this.scrollHeight - 40)) {
                 if (!isLoadingRecipes && hasMoreRecipes) loadRecipes(true);
@@ -709,8 +711,6 @@
             vibrateApp(20);
             
             const selFinished = document.getElementById('rbFinishedGood');
-            
-            // Initiate highly optimized paginated dropdowns
             await loadDropdownData('rbFinishedGood', 'all', false);
             await loadDropdownData('rbEmptyMaterial', 'all', false);
             
@@ -722,7 +722,6 @@
                     if(docSnap.exists()) {
                         const product = docSnap.data();
                         
-                        // Force append option if not in first page to allow selection
                         if(!selFinished.querySelector(`option[value="${editInvId}"]`)) {
                              selFinished.insertAdjacentHTML('beforeend', `<option value="${editInvId}">${product.name}</option>`);
                         }
@@ -737,6 +736,13 @@
                             }
                             emptySel.value = product.fillingRecipe.emptyBottleId;
                             document.getElementById('rbQtyRatio').value = product.fillingRecipe.qtyPerUnit;
+                            
+                            // FIX ADDED HERE: Populate the new field
+                            if (product.fillingRecipe.bottlesPerEmpty) {
+                                document.getElementById('rbBottlesPerEmpty').value = product.fillingRecipe.bottlesPerEmpty;
+                            } else {
+                                document.getElementById('rbBottlesPerEmpty').value = "1";
+                            }
                         }
                     }
                 } catch(e) { console.error(e); }
@@ -745,6 +751,7 @@
                 document.getElementById('recipeBuilderTitle').innerText = "Create Recipe";
                 selFinished.disabled = false;
                 document.getElementById('rbQtyRatio').value = "";
+                document.getElementById('rbBottlesPerEmpty').value = "1";
             }
             
             openModal('modalRecipeBuilder');
@@ -758,8 +765,10 @@
             const finishedId = finishedSel.value;
             const emptyId = emptySel.value;
             const qtyRatio = parseFloat(document.getElementById('rbQtyRatio').value);
+            // FIX ADDED HERE: Extract the new field parameter
+            const bottlesPerEmpty = parseFloat(document.getElementById('rbBottlesPerEmpty').value) || 1;
 
-            if (!finishedId || !emptyId || finishedId === "LOAD_MORE" || emptyId === "LOAD_MORE" || isNaN(qtyRatio) || qtyRatio <= 0) {
+            if (!finishedId || !emptyId || finishedId === "LOAD_MORE" || emptyId === "LOAD_MORE" || isNaN(qtyRatio) || qtyRatio <= 0 || isNaN(bottlesPerEmpty) || bottlesPerEmpty <= 0) {
                 showToast("Please fill all fields correctly.", "error"); return;
             }
             if (finishedId === emptyId) {
@@ -774,17 +783,18 @@
                 
                 const docRef = doc(db, "inventory", finishedId);
                 await updateDoc(docRef, { 
-                    hasFillingRecipe: true, // FLAG for optimizing queries!
+                    hasFillingRecipe: true,
                     fillingRecipe: {
                         emptyBottleId: emptyId,
                         emptyBottleName: emptyOption.text,
-                        qtyPerUnit: qtyRatio
+                        qtyPerUnit: qtyRatio,
+                        bottlesPerEmpty: bottlesPerEmpty // Saved for math execution logic later
                     },
                     lastUpdated: new Date().toISOString()
                 });
                 
                 showToast("Filling Recipe saved successfully!");
-                loadRecipes(false); // Refresh
+                loadRecipes(false);
                 history.back(); 
             } catch (err) {
                 console.error(err);
@@ -821,12 +831,12 @@
                         </select>
                     </div>
                     <div class="field-wrap">
-                        <label class="mobile-label">Qty (Cases)</label>
-                        <input type="number" placeholder="Cases" min="0" class="f-qty">
+                        <label class="mobile-label">Qty (Cases/Units)</label>
+                        <input type="number" placeholder="Qty" min="0" class="f-qty">
                     </div>
                     <div class="field-wrap">
-                        <label class="mobile-label">Reject (Bottles)</label>
-                        <input type="number" placeholder="Reject" min="0" value="0" class="f-reject">
+                        <label class="mobile-label">Reject (Pieces)</label>
+                        <input type="number" placeholder="Pieces" min="0" value="0" class="f-reject">
                     </div>
                     <div class="field-wrap">
                         <label class="mobile-label">Cost (₹)</label>
@@ -838,8 +848,6 @@
                 </div>
             `;
             container.insertAdjacentHTML('beforeend', html);
-            
-            // Paginated load optimized for items WITH filling recipes
             loadDropdownData(selectId, 'recipes', false);
         };
 
@@ -869,20 +877,34 @@
                 if (hasData) {
                     if (prodId && prodId !== "LOAD_MORE" && (qty >= 0 && reject >= 0 && cost >= 0) && (qty > 0 || reject > 0)) {
                         
-                        // Grab heavily optimized embedded data! No DB Read required!
                         const emptyId = selectedOpt.getAttribute('data-empty-id');
                         const emptyName = selectedOpt.getAttribute('data-empty-name');
                         const ratio = parseFloat(selectedOpt.getAttribute('data-ratio'));
+                        // Extracting our new parameter
+                        const bottlesPerEmpty = parseFloat(selectedOpt.getAttribute('data-bottles-per-empty')) || 1;
                         
                         if (!emptyId || isNaN(ratio)) {
                             validItems = false;
                             return;
                         }
 
-                        // Highly accurate integer math implementation preventing floating-point chaos
-                        const nominalBottles = Math.round(qty * ratio);
-                        const exactEmptyDeducted = nominalBottles; 
-                        const exactFinishedAdded = Math.max(0, nominalBottles - reject);
+                        // THE MATHEMATICAL FIX:
+                        // 1. You add EXACTLY the Finished Good amount entered (Cases).
+                        const exactFinishedAdded = qty; 
+                        
+                        // 2. Exact raw units consumed = (Finished Qty * Ratio) + Wasted Raw Units.
+                        let exactEmptyDeducted = 0;
+
+                        if (bottlesPerEmpty === 1) {
+                            // Pure integer math for single piece items to prevent floating point drift entirely
+                            exactEmptyDeducted = Math.round((qty * ratio) + reject);
+                        } else {
+                            // Decimal math for packs (e.g., 24 bottles per pack)
+                            const rejectInEmptyUnits = reject / bottlesPerEmpty;
+                            exactEmptyDeducted = (qty * ratio) + rejectInEmptyUnits;
+                            // Optionally round to 4 decimal places to prevent float drift natively in JS
+                            exactEmptyDeducted = Math.round(exactEmptyDeducted * 10000) / 10000;
+                        }
 
                         items.push({ 
                             finishedId: prodId, 
@@ -890,6 +912,7 @@
                             emptyId: emptyId,
                             emptyName: emptyName,
                             ratio: ratio,
+                            bottlesPerEmpty: bottlesPerEmpty, // Saves into history
                             qtyCases: qty, 
                             rejected: reject, 
                             cost: cost,
@@ -910,7 +933,6 @@
             btn.disabled = true; btn.innerHTML = "Processing Stock...";
 
             try {
-                // SERVER-SIDE SECURE TRANSACTION
                 await runTransaction(db, async (transaction) => {
                     const logRef = doc(collection(db, "filling_logs"));
                     
@@ -952,7 +974,7 @@
         });
 
         // ==========================================
-        // 3. DELETE (REVERSE TRANSACTION) - CACHE FREE
+        // 3. DELETE (REVERSE TRANSACTION)
         // ==========================================
         window.confirmDeleteFilling = function(id) {
             document.getElementById('deleteTargetId').value = id;
@@ -970,7 +992,6 @@
             try {
                 const logRef = doc(db, "filling_logs", id);
                 
-                // Directly fetch current data to avoid stale cache reliance
                 const logSnap = await getDoc(logRef);
                 if(!logSnap.exists()) {
                     showToast("Log not found.", "error");
@@ -980,7 +1001,6 @@
                 const logData = logSnap.data();
 
                 await runTransaction(db, async (transaction) => {
-                    // Safety check inside transaction
                     const tLogSnap = await transaction.get(logRef);
                     if (!tLogSnap.exists()) throw "Already deleted";
 
@@ -991,10 +1011,10 @@
                         let finishedToRemove = item.exactFinishedAdded;
                         let emptyToRestore = item.exactEmptyDeducted;
 
-                        // Smart fallback for old logs (V1) to completely fix the fractional corruption
+                        // Backward compatibility fallback for the old corrupted logs
                         if (finishedToRemove === undefined) {
-                            finishedToRemove = item.qtyCases; // Reverts the exact "wrongly added cases"
-                            emptyToRestore = (item.qtyCases * item.ratio) + (item.rejected || 0); // Reverts exact empty deduction
+                            finishedToRemove = item.qtyCases; 
+                            emptyToRestore = (item.qtyCases * item.ratio) + (item.rejected || 0);
                         }
                         
                         if (finishedToRemove > 0) {
@@ -1073,11 +1093,6 @@
                         <div class="skeleton" style="width: 100%; height: 40px; border-radius: 8px;"></div>
                         <div class="skeleton" style="width: 30%; height: 20px; border-radius: 4px; margin-top: auto;"></div>
                     </div>
-                    <div class="filling-card" style="padding: 20px; min-height: 160px; display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--border-color);">
-                        <div class="skeleton" style="width: 50%; height: 24px; border-radius: 4px;"></div>
-                        <div class="skeleton" style="width: 100%; height: 40px; border-radius: 8px;"></div>
-                        <div class="skeleton" style="width: 30%; height: 20px; border-radius: 4px; margin-top: auto;"></div>
-                    </div>
                 `;
                 grid.innerHTML = skeletonHtml;
                 lastVisibleDoc = null;
@@ -1132,15 +1147,14 @@
                     let itemsHtml = '';
                     if (data.items) {
                         data.items.forEach(i => {
-                            // Properly display exact integer units added in UI log history
                             const displayUnits = i.exactFinishedAdded !== undefined ? i.exactFinishedAdded : i.qtyCases;
-                            const unitLabel = i.exactFinishedAdded !== undefined ? 'Units' : 'Cases';
+                            const unitLabel = i.exactFinishedAdded !== undefined ? 'Cases/Units' : 'Cases';
                             
                             itemsHtml += `
                                 <div class="fc-row">
                                     <div style="flex:1;">
                                         <div class="fc-label">${i.finishedName}</div>
-                                        ${i.rejected > 0 ? `<div class="fc-reject">${i.rejected} Empty Bottles Rejected</div>` : ''}
+                                        ${i.rejected > 0 ? `<div class="fc-reject">${i.rejected} Pieces Rejected</div>` : ''}
                                     </div>
                                     <div style="text-align: right;">
                                         ${displayUnits > 0 ? `<div class="fc-val">+${displayUnits} ${unitLabel}</div>` : `<div class="fc-val" style="color:var(--text-muted);">0 ${unitLabel}</div>`}
