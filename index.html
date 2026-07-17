@@ -240,6 +240,103 @@
                 grid-column: span 1 !important; 
             }
         }
+
+        /* =========================================
+           PWA CUSTOM INSTALL POPUP STYLES
+           ========================================= */
+        #pwa-install-banner {
+            position: fixed;
+            bottom: max(80px, calc(80px + env(safe-area-inset-bottom))); /* Sits right above mobile nav */
+            left: 50%;
+            transform: translateX(-50%) translateY(200%);
+            width: calc(100% - 40px);
+            max-width: 400px;
+            background-color: var(--bg-surface);
+            box-shadow: var(--shadow-lg), 0 -4px 15px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px;
+            z-index: 99999;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+        }
+        #pwa-install-banner.pwa-visible {
+            transform: translateX(-50%) translateY(0);
+        }
+        .pwa-content-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            width: 100%;
+        }
+        .pwa-app-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            flex-shrink: 0;
+            object-fit: cover;
+        }
+        .pwa-text-area {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        .pwa-headline {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+        .pwa-subhead {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+            line-height: 1.3;
+        }
+        .pwa-btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .btn-pwa {
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-pwa:active { transform: scale(0.95); }
+        .btn-pwa-primary {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            box-shadow: 0 2px 4px rgba(30, 64, 175, 0.2);
+        }
+        .btn-pwa-secondary {
+            background-color: var(--input-bg);
+            color: var(--text-muted);
+        }
+        @media (max-width: 400px) {
+            .pwa-content-wrapper {
+                flex-direction: column;
+                text-align: center;
+            }
+            .pwa-btn-group {
+                flex-direction: row;
+                width: 100%;
+                justify-content: center;
+                margin-top: 10px;
+            }
+            .btn-pwa { flex: 1; }
+        }
+
+        /* USER OVERRIDE: FORCE CHARTS TO ALWAYS STACK (BAR TOP, PIE BOTTOM) */
+        @media (min-width: 900px) {
+            .charts-section { grid-template-columns: 1fr !important; }
+        }
     </style>
 </head>
 <body>
@@ -328,12 +425,12 @@
                             
                             <!-- PROFESSIONAL CHARTS SECTION -->
                             <div class="charts-section">
-                                <div class="chart-container">
-                                    <div class="chart-title">Financial Overview (₹)</div>
+                                <div class="chart-container" style="height: 350px;">
+                                    <div class="chart-title">Overall Metrics (Bar Chart)</div>
                                     <canvas id="barChart"></canvas>
                                 </div>
-                                <div class="chart-container">
-                                    <div class="chart-title">Operations (Qty)</div>
+                                <div class="chart-container" style="height: 350px;">
+                                    <div class="chart-title">Overall Metrics (Pie Chart)</div>
                                     <canvas id="pieChart"></canvas>
                                 </div>
                             </div>
@@ -374,6 +471,21 @@
             </div>
 
             <nav class="bottom-nav" id="mobile-nav"></nav>
+        </div>
+    </div>
+
+    <!-- PWA CUSTOM INSTALL POPUP HTML -->
+    <div id="pwa-install-banner">
+        <div class="pwa-content-wrapper">
+            <img src="images/icon.png" alt="App Icon" class="pwa-app-icon" onerror="this.src='https://via.placeholder.com/50'">
+            <div class="pwa-text-area">
+                <span class="pwa-headline">Install Dashboard App</span>
+                <span class="pwa-subhead">Add to home screen for faster access and a better experience.</span>
+            </div>
+            <div class="pwa-btn-group">
+                <button id="btn-pwa-install" class="btn-pwa btn-pwa-primary">Install</button>
+                <button id="btn-pwa-close" class="btn-pwa btn-pwa-secondary">Not Now</button>
+            </div>
         </div>
     </div>
 
@@ -504,19 +616,26 @@
             Chart.defaults.font.family = "'Inter', sans-serif";
             Chart.defaults.color = '#64748b';
             
-            // Render Bar Chart (Financials)
+            // Setup shared properties as requested: Production, Filling, Sales(Rev), Expenses, etc.
+            const commonLabels = ['Sales/Rev', 'Expenses', 'Materials', 'Production', 'Filling'];
+            const commonData = [rev, exp, pur, prod, fill];
+            const commonColors = [
+                'rgba(16, 185, 129, 0.85)', // Success (Rev)
+                'rgba(239, 68, 68, 0.85)',  // Danger (Exp)
+                'rgba(245, 158, 11, 0.85)', // Warning (Pur)
+                'rgba(59, 130, 246, 0.85)', // Primary (Prod)
+                'rgba(139, 92, 246, 0.85)'  // Purple (Fill)
+            ];
+
+            // Render Bar Chart (Everything)
             barChartInstance = new Chart(barCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['Revenue', 'Expenses', 'Materials'],
+                    labels: commonLabels,
                     datasets: [{
-                        label: 'Amount (₹)',
-                        data: [rev, exp, pur],
-                        backgroundColor: [
-                            'rgba(16, 185, 129, 0.85)', // Success
-                            'rgba(239, 68, 68, 0.85)',  // Danger
-                            'rgba(245, 158, 11, 0.85)'  // Warning
-                        ],
+                        label: 'Metrics',
+                        data: commonData,
+                        backgroundColor: commonColors,
                         borderRadius: 6,
                         borderSkipped: false,
                         barPercentage: 0.6
@@ -530,7 +649,10 @@
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    return '₹ ' + formatINR(context.raw);
+                                    let val = context.raw;
+                                    // Financial metrics (indices 0, 1, 2) get ₹, Production/Filling get Qty
+                                    if(context.dataIndex < 3) return '₹ ' + formatINR(val);
+                                    return Number(val || 0).toLocaleString('en-IN') + ' Qty';
                                 }
                             }
                         }
@@ -542,17 +664,14 @@
                 }
             });
             
-            // Render Pie Chart (Operations)
+            // Render Pie Chart (Everything)
             pieChartInstance = new Chart(pieCtx, {
-                type: 'doughnut',
+                type: 'pie',
                 data: {
-                    labels: ['Production Qty', 'Filling Qty'],
+                    labels: commonLabels,
                     datasets: [{
-                        data: [prod, fill],
-                        backgroundColor: [
-                            'rgba(59, 130, 246, 0.85)', // Primary
-                            'rgba(139, 92, 246, 0.85)'  // Purple
-                        ],
+                        data: commonData,
+                        backgroundColor: commonColors,
                         borderWidth: 0,
                         hoverOffset: 4
                     }]
@@ -560,11 +679,20 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    cutout: '70%',
                     plugins: {
                         legend: {
                             position: 'bottom',
-                            labels: { usePointStyle: true, padding: 20 }
+                            labels: { usePointStyle: true, padding: 15 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let val = context.raw;
+                                    // Financial metrics get ₹, Production/Filling get Qty
+                                    if(context.dataIndex < 3) return '₹ ' + formatINR(val);
+                                    return Number(val || 0).toLocaleString('en-IN') + ' Qty';
+                                }
+                            }
                         }
                     }
                 }
@@ -694,6 +822,57 @@
         }
         document.querySelectorAll('.nav-item').forEach(el => {
             el.addEventListener('click', () => hapticVibrate(40));
+        });
+    </script>
+
+    <!-- PWA CUSTOM INSTALL SCRIPT -->
+    <script>
+        let deferredPrompt;
+        const pwaBanner = document.getElementById('pwa-install-banner');
+        const btnInstall = document.getElementById('btn-pwa-install');
+        const btnClose = document.getElementById('btn-pwa-close');
+
+        // Listen for the beforeinstallprompt event
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent the mini-infobar from appearing on mobile
+            e.preventDefault();
+            // Stash the event so it can be triggered later
+            deferredPrompt = e;
+            // Update UI to show the install banner
+            if (pwaBanner) {
+                pwaBanner.classList.add('pwa-visible');
+            }
+        });
+
+        // Handle the install button click
+        if (btnInstall) {
+            btnInstall.addEventListener('click', async () => {
+                // Hide the custom app install prompt
+                if (pwaBanner) pwaBanner.classList.remove('pwa-visible');
+                // Show the standard prompt
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    // Wait for the user to respond to the prompt
+                    const { outcome } = await deferredPrompt.userChoice;
+                    console.log(`User response to the install prompt: ${outcome}`);
+                    // We've used the prompt, and can't use it again, throw it away
+                    deferredPrompt = null;
+                }
+            });
+        }
+
+        // Handle the close button click
+        if (btnClose) {
+            btnClose.addEventListener('click', () => {
+                if (pwaBanner) pwaBanner.classList.remove('pwa-visible');
+            });
+        }
+
+        // Optionally, listen for the appinstalled event to know when installation completes
+        window.addEventListener('appinstalled', () => {
+            if (pwaBanner) pwaBanner.classList.remove('pwa-visible');
+            deferredPrompt = null;
+            console.log('PWA was installed successfully');
         });
     </script>
 </body>
