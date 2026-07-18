@@ -129,6 +129,15 @@
         .spinner { border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid #fff; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        /* Mini Popup Modals */
+        .mini-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; background: rgba(15, 23, 42, 0.6); z-index: 4000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; backdrop-filter: blur(4px); }
+        .mini-modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .mini-modal-content { background: var(--bg-surface); width: 92%; max-width: 400px; border-radius: 24px; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); transform: scale(0.95); transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid var(--border-color); }
+        .mini-modal-overlay.active .mini-modal-content { transform: scale(1); }
+        
+        .index-link-btn { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 14px; background: rgba(14, 165, 233, 0.1); border: 1px solid rgba(14, 165, 233, 0.3); color: var(--accent-color); border-radius: 12px; font-weight: 700; text-decoration: none; margin-bottom: 10px; transition: all 0.2s; }
+        .index-link-btn:active { transform: scale(0.98); }
+
         /* Toasts */
         .toast-msg { position: fixed; top: 20px; left: 50%; transform: translate(-50%, -20px); color: white; padding: 12px 24px; border-radius: 8px; z-index: 9999; display: none; font-weight: 600; font-size: 0.95em; align-items: center; gap: 10px; opacity: 0; transition: all 0.3s; box-shadow: var(--shadow-lg); }
         .toast-msg.error { background: var(--danger-color); }
@@ -150,7 +159,7 @@
 
         @media print {
             /* Safely hide app UI */
-            #app-shell, .toast-msg { display: none !important; }
+            #app-shell, .toast-msg, .mini-modal-overlay { display: none !important; }
 
             /* Force 1 page and remove browser headers/footers */
             @page {
@@ -455,6 +464,25 @@
         </div>
     </div>
 
+    <!-- DYNAMIC INDEX ERROR MODAL -->
+    <div class="mini-modal-overlay" id="miniModalIndexError">
+        <div class="mini-modal-content" style="max-width: 460px; width: 92%;">
+            <div style="text-align: center;">
+                <div style="width: 64px; height: 64px; background: rgba(245, 158, 11, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto;">
+                    <span class="material-symbols-outlined" style="font-size: 32px; color: var(--warning-color);">database</span>
+                </div>
+                <h3 style="margin-bottom: 8px; font-size: 1.25rem; color: var(--text-main); font-weight: 700;">Database Index Required</h3>
+                <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem; line-height: 1.5;">Firebase needs a composite index to run this query. Click the link(s) below to auto-generate them in your console:</p>
+                
+                <div id="indexLinksContainer" style="margin-bottom: 20px; text-align: left;">
+                    <!-- Links injected here -->
+                </div>
+                
+                <button type="button" onclick="closeMiniModal('miniModalIndexError')" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main); font-weight: 600; cursor: pointer; transition: all 0.2s;">Dismiss</button>
+            </div>
+        </div>
+    </div>
+
     <div id="printArea">
         <div class="print-top-band">
             <div class="print-header-left">
@@ -610,6 +638,56 @@
             if (!user) { window.location.replace('login.html'); }
         });
 
+        // --- SMART MODAL LOGIC FOR BACK-BUTTON SUPPORT ---
+        window.openMiniModal = function(id) { 
+            vibrateApp(20); 
+            const modal = document.getElementById(id);
+            if (!modal.classList.contains('active')) {
+                modal.classList.add('active');
+                history.pushState({ modal: id }, "", "");
+            }
+        };
+
+        window.closeMiniModal = function(id) { 
+            const modal = document.getElementById(id);
+            if (modal.classList.contains('active')) {
+                modal.classList.remove('active');
+                if (history.state && history.state.modal === id) {
+                    history.back();
+                }
+            }
+        };
+
+        window.addEventListener('popstate', (e) => {
+            document.querySelectorAll('.mini-modal-overlay.active').forEach(m => m.classList.remove('active'));
+        });
+
+        // --- DYNAMIC FIREBASE INDEX ERROR INTERCEPTOR ---
+        window.handleFirestoreError = function(e) {
+            console.error(e);
+            const errStr = e.toString() || e.message || "";
+            const links = errStr.match(/https:\/\/console\.firebase\.google\.com[^\s]*/g);
+            
+            if (links && links.length > 0) {
+                const container = document.getElementById('indexLinksContainer');
+                container.innerHTML = '';
+                
+                links.forEach((link, idx) => {
+                    const cleanLink = link.replace(/[.,;)]+$/, ""); // Remove trailing punctuation
+                    container.innerHTML += `
+                        <a href="${cleanLink}" target="_blank" class="index-link-btn">
+                            <span>Auto-Build Index #${idx + 1}</span>
+                            <span class="material-symbols-outlined">open_in_new</span>
+                        </a>
+                    `;
+                });
+                
+                openMiniModal('miniModalIndexError');
+            } else {
+                window.showToast("Database Error. Please check connection.", "error");
+            }
+        };
+
         // --- AUTOMATIC INVOICE NUMBERING ---
         let currentInvoiceNumber = "GST-XXXX";
         let nextInvCount = 1;
@@ -744,7 +822,8 @@
                 });
                 
             } catch (error) {
-                console.error("Search failed:", error);
+                // Modified to handle Firebase Index Errors smoothly
+                handleFirestoreError(error);
                 if (!isLoadMore) {
                     suggestionsBox.innerHTML = '<div style="padding:14px 16px; color:var(--danger-color);">Error fetching products</div>';
                 } else {
@@ -918,21 +997,31 @@
                 
                 let customInvNo = document.getElementById('customInvNo').value.trim();
                 let finalInvNo = customInvNo || currentInvoiceNumber;
+                
+                const paymentModeVal = document.getElementById('cPaymentMode').value;
 
-                const sellRef = doc(collection(db, "sales"));
-                batch.set(sellRef, {
+                // Create the base sale payload
+                const salePayload = {
                     invoiceNo: finalInvNo,
                     customer: { 
                         name: cName, 
                         phone: document.getElementById('cPhone').value, 
                         address: document.getElementById('cAddress').value 
                     },
-                    paymentMode: document.getElementById('cPaymentMode').value,
+                    paymentMode: paymentModeVal,
                     date: finalDate,
                     items: cartItems,
                     totals: billTotals,
                     createdAt: serverTimestamp()
-                });
+                };
+
+                // NEW LOGIC: Inject "Pending" status if the bill is a Credit Sale
+                if (paymentModeVal === "Credit") {
+                    salePayload.creditStatus = "Pending";
+                }
+
+                const sellRef = doc(collection(db, "sales"));
+                batch.set(sellRef, salePayload);
 
                 cartItems.forEach(item => {
                     batch.update(doc(db, "inventory", item.invId), { qty: increment(-item.qty) });
@@ -965,8 +1054,8 @@
                 btn.disabled = false;
 
             } catch (err) {
-                console.error(err);
-                showToast("Database Error during save.");
+                // Modified to handle Firebase Index Errors smoothly
+                handleFirestoreError(err);
                 btn.disabled = false;
                 icon.style.display = 'inline-block';
                 text.innerText = "Save Bill";
