@@ -243,22 +243,6 @@
         .rpt-table td.num { text-align: right; }
         .rpt-table tr.total-row { font-weight: bold; background-color: #e2e8f0; page-break-inside: avoid; }
 
-        /* --- ADDED MEDIA PRINT TO SUPPORT NATIVE PRINT BOX --- */
-        @media print {
-            body { background-color: #fff !important; margin: 0; padding: 0; }
-            #app-shell, nav, header, .modal, .mini-modal-overlay, .toast-msg { display: none !important; }
-            .pdf-export-container { display: block !important; width: 100% !important; max-width: 100% !important; margin: 0 !important; }
-            
-            /* Overriding absolutely positioned footers to avoid breaking across native print pages */
-            #printArea { position: static !important; min-height: auto !important; padding-bottom: 0 !important; }
-            #printArea .print-middle-section { position: relative !important; bottom: auto !important; margin-top: 20px !important; page-break-inside: avoid !important; }
-            #printArea .print-signature-area { position: relative !important; bottom: auto !important; margin-top: 40px !important; margin-bottom: 20px !important; page-break-inside: avoid !important; }
-            #printArea .print-absolute-footer { position: relative !important; bottom: auto !important; page-break-inside: avoid !important; }
-            
-            #reportPrintArea { position: static !important; min-height: auto !important; padding-bottom: 0 !important; }
-            
-            .page-break { page-break-after: always !important; }
-        }
     </style>
 </head>
 <body>
@@ -647,6 +631,31 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
         import { collection, query, where, getDocs, getAggregateFromServer, sum, orderBy } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
+        // --- DEVICE CAPABILITY CHECK FOR PDF DOWNLOADS ---
+        (function enforceMobileOnlyPDFs() {
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+            if (!isMobile) {
+                // GST PDF Button Disable
+                const btnExportPDF = document.getElementById('btnExportPDF');
+                if (btnExportPDF) {
+                    btnExportPDF.disabled = true;
+                    btnExportPDF.style.opacity = '0.6';
+                    btnExportPDF.style.cursor = 'not-allowed';
+                    btnExportPDF.innerHTML = '<span class="material-symbols-outlined">mobile_off</span> PDF Only Available in Mobile';
+                    btnExportPDF.title = "Please use a mobile device to download PDFs.";
+                }
+                // Single Bill PDF Button Disable
+                const btnDownloadSingleBill = document.getElementById('btnDownloadSingleBill');
+                if (btnDownloadSingleBill) {
+                    btnDownloadSingleBill.disabled = true;
+                    btnDownloadSingleBill.style.opacity = '0.6';
+                    btnDownloadSingleBill.style.cursor = 'not-allowed';
+                    btnDownloadSingleBill.innerHTML = '<span class="material-symbols-outlined">mobile_off</span> PDF Only Available in Mobile';
+                    btnDownloadSingleBill.title = "Please use a mobile device to download PDFs.";
+                }
+            }
+        })();
+
         // Navigation (Added Filling)
         const navItems = [
             { name: 'Dashboard', path: 'index.html', icon: '<path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>' },
@@ -1019,26 +1028,6 @@
                 element.style.width = '210mm';
                 element.style.maxWidth = '210mm';
                 element.style.position = 'relative';
-
-                // --- NEW PRINT BOX OPEN LOGIC ---
-                // Delay to allow DOM to render the block display properly before invoking native print
-                setTimeout(() => {
-                    const origTitle = document.title;
-                    document.title = filename; 
-                    window.print();
-                    document.title = origTitle;
-
-                    appShell.style.display = ''; 
-                    activeModals.forEach(m => m.style.display = ''); 
-                    element.style.display = ''; 
-                    element.style.width = '';
-                    element.style.maxWidth = '';
-                    element.style.position = '';
-                    resolve(true);
-                }, 300);
-                
-                // Halt execution here to use native print box exclusively (keeps below lines strictly untouched)
-                return; 
 
                 const opt = {
                     margin:       0,
