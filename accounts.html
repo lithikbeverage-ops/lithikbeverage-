@@ -1003,25 +1003,7 @@
                 element.style.width = '210mm';
                 element.style.maxWidth = '210mm';
                 element.style.position = 'relative';
-                // FIX ADDED: Anchor perfectly to top-left to avoid window flex/offset cuts on large displays
-                element.style.position = 'absolute'; 
-                element.style.left = '0px';
-                element.style.top = '0px';
 
-                // =========================================================
-                // CRITICAL BUG FIX FOR BLANK PAGE DOWNLOAD:
-                // The root cause of the blank PDF is `html, body { overflow: hidden; height: 100%; }` in CSS. 
-                // html2canvas cuts off elements rendered outside a hidden viewport. We temporarily override this.
-                // We also add a setTimeout to allow the browser to fully paint the layout before taking the DOM snapshot.
-                // =========================================================
-                document.documentElement.style.height = 'auto';
-                document.body.style.height = 'auto';
-                document.documentElement.style.overflow = 'visible';
-                document.body.style.overflow = 'visible';
-                window.scrollTo(0, 0); 
-                
-                setTimeout(() => {
-                
                 const opt = {
                     margin:       0,
                     filename:     `${filename}.pdf`,
@@ -1031,12 +1013,8 @@
                         useCORS: true, 
                         letterRendering: true,
                         scrollY: 0, 
-                        scrollX: 0, // Force completely ignoring horizontal window scrolling limits
-                        x: 0,       // Instruct canvas strictly to start drawing from X 0
-                        y: 0,       // Instruct canvas strictly to start drawing from Y 0
                         // FIX: Replaced strict hardcoded windowWidth that broke on desktop with native scroll scaling
-                        windowWidth: element.scrollWidth,
-                        windowHeight: element.scrollHeight + 50 // ADDED FIX: Ensures bottom doesn't get cut at all
+                        windowWidth: element.scrollWidth 
                     },
                     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
                     pagebreak:    { mode: ['css', 'legacy'] }
@@ -1051,15 +1029,6 @@
                     element.style.width = '';
                     element.style.maxWidth = '';
                     element.style.position = '';
-                    element.style.left = '';
-                    element.style.top = '';
-
-                    // --- NEW CODE --- Resetting Body Rules Back to Normal
-                    document.documentElement.style.height = '';
-                    document.body.style.height = '';
-                    document.documentElement.style.overflow = '';
-                    document.body.style.overflow = '';
-
                     resolve(true);
                 }).catch(err => {
                     console.error("PDF Export Error:", err);
@@ -1069,19 +1038,8 @@
                     element.style.width = '';
                     element.style.maxWidth = '';
                     element.style.position = '';
-                    element.style.left = '';
-                    element.style.top = '';
-
-                    // --- NEW CODE --- Resetting Body Rules Back to Normal
-                    document.documentElement.style.height = '';
-                    document.body.style.height = '';
-                    document.documentElement.style.overflow = '';
-                    document.body.style.overflow = '';
-
                     resolve(false);
                 });
-
-                }, 500); // 500ms delay to guarantee DOM is rendered before snapshot fires
             });
         }
 
