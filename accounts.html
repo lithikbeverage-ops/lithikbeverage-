@@ -1000,12 +1000,13 @@
                 
                 // FIX: Desktop Half-Cut Prevention
                 element.style.display = 'block';
-                element.style.width = '794px'; // Strictly 210mm in pixels to prevent centering offsets
-                element.style.maxWidth = '794px';
-                element.style.position = 'absolute'; // Absolute positioning at 0,0 kills all layout shifts
-                element.style.left = '0';
-                element.style.top = '0';
-                element.style.margin = '0';
+                element.style.width = '210mm';
+                element.style.maxWidth = '210mm';
+                element.style.position = 'relative';
+                // FIX ADDED: Anchor perfectly to top-left to avoid window flex/offset cuts on large displays
+                element.style.position = 'absolute'; 
+                element.style.left = '0px';
+                element.style.top = '0px';
 
                 const opt = {
                     margin:       0,
@@ -1016,9 +1017,11 @@
                         useCORS: true, 
                         letterRendering: true,
                         scrollY: 0, 
-                        scrollX: 0,
-                        // FIX: Hardlocking window width to exact element width stops the viewport from pushing the canvas right
-                        windowWidth: 794 
+                        scrollX: 0, // Force completely ignoring horizontal window scrolling limits
+                        x: 0,       // Instruct canvas strictly to start drawing from X 0
+                        y: 0,       // Instruct canvas strictly to start drawing from Y 0
+                        // FIX: Replaced strict hardcoded windowWidth that broke on desktop with native scroll scaling
+                        windowWidth: element.scrollWidth 
                     },
                     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
                     pagebreak:    { mode: ['css', 'legacy'] }
@@ -1035,7 +1038,6 @@
                     element.style.position = '';
                     element.style.left = '';
                     element.style.top = '';
-                    element.style.margin = '';
                     resolve(true);
                 }).catch(err => {
                     console.error("PDF Export Error:", err);
@@ -1047,7 +1049,6 @@
                     element.style.position = '';
                     element.style.left = '';
                     element.style.top = '';
-                    element.style.margin = '';
                     resolve(false);
                 });
             });
