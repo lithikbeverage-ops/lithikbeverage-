@@ -217,9 +217,7 @@
                 <h1>LABOUR & ATTENDANCE</h1>
             </div>
             <div class="header-right">
-                <!-- Daily Picker for Attendance Tab -->
                 <input type="date" id="dailyDatePicker" class="header-date-picker" title="Select Date" onchange="vibrateApp(10); handleDateChange()">
-                <!-- Month Picker for Report Tab -->
                 <input type="month" id="monthPicker" class="header-date-picker" style="display: none;" title="Select Month" onchange="vibrateApp(10); generateReport()">
             </div>
         </header>
@@ -230,24 +228,20 @@
             <div class="main-scroll-area">
                 <div class="container-inner">
                     
-                    <!-- Top Navigation Tabs -->
                     <div class="tabs-container">
                         <div class="tab-btn active" onclick="switchTab('mark', this)">Mark Attendance</div>
                         <div class="tab-btn" onclick="switchTab('roster', this)">Labour Roster</div>
                         <div class="tab-btn" onclick="switchTab('report', this)">Monthly Report</div>
                     </div>
 
-                    <!-- TAB 1: MARK ATTENDANCE -->
                     <div id="tab-mark" class="tab-content active">
                         <div id="attendanceContainer" class="att-marking-list">
-                            <!-- Loaded via JS -->
-                        </div>
+                            </div>
                         <button class="btn-primary" id="btnSaveAttendance" onclick="saveAttendance()" style="display: none; position: sticky; bottom: 20px; z-index: 5;">
                             <span class="material-symbols-outlined">save</span> Save Attendance
                         </button>
                     </div>
 
-                    <!-- TAB 2: LABOUR ROSTER -->
                     <div id="tab-roster" class="tab-content">
                         <div class="top-actions">
                             <div class="search-container">
@@ -259,11 +253,9 @@
                             </button>
                         </div>
                         <div class="roster-grid" id="rosterGrid">
-                            <!-- Loaded via JS -->
-                        </div>
+                            </div>
                     </div>
 
-                    <!-- TAB 3: MONTHLY REPORT -->
                     <div id="tab-report" class="tab-content">
                         <div class="top-actions" style="justify-content: flex-end; margin-bottom: 16px;">
                             <button class="btn-outline" onclick="exportTableToCSV()">
@@ -274,12 +266,10 @@
                             <table id="reportTable">
                                 <thead>
                                     <tr id="reportThead">
-                                        <!-- Columns generated dynamically -->
-                                    </tr>
+                                        </tr>
                                 </thead>
                                 <tbody id="reportTbody">
-                                    <!-- Rows generated dynamically -->
-                                </tbody>
+                                    </tbody>
                             </table>
                         </div>
                     </div>
@@ -291,7 +281,6 @@
         <nav class="bottom-nav" id="mobile-nav"></nav>
     </div>
 
-    <!-- Mini Modal - Add / Edit Worker -->
     <div class="mini-modal-overlay" id="modalWorker">
         <div class="mini-modal-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
@@ -327,7 +316,6 @@
         </div>
     </div>
 
-    <!-- Mini Modal - Delete Confirmation -->
     <div class="mini-modal-overlay" id="modalDeleteWorker">
         <div class="mini-modal-content">
             <div style="text-align: center;">
@@ -625,8 +613,8 @@
                 }
 
                 rosterCache.forEach(w => {
-                    // Default to 'present' if not previously marked. Safely resolve wage edge cases.
-                    let status = savedRecords[w.id] ? savedRecords[w.id].status : 'P';
+                    // Changed from 'P' to '-' to remain grey/unselected by default
+                    let status = savedRecords[w.id] ? savedRecords[w.id].status : '-';
                     let pastWage = savedRecords[w.id]?.wage ?? w.dailyWage ?? 0;
 
                     attendanceState[w.id] = { name: w.name, status: status, wage: pastWage };
