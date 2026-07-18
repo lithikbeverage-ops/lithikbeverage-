@@ -1000,9 +1000,12 @@
                 
                 // FIX: Desktop Half-Cut Prevention
                 element.style.display = 'block';
-                element.style.width = '210mm';
-                element.style.maxWidth = '210mm';
-                element.style.position = 'relative';
+                element.style.width = '794px'; // Strictly 210mm in pixels to prevent centering offsets
+                element.style.maxWidth = '794px';
+                element.style.position = 'absolute'; // Absolute positioning at 0,0 kills all layout shifts
+                element.style.left = '0';
+                element.style.top = '0';
+                element.style.margin = '0';
 
                 const opt = {
                     margin:       0,
@@ -1013,8 +1016,9 @@
                         useCORS: true, 
                         letterRendering: true,
                         scrollY: 0, 
-                        // FIX: Replaced strict hardcoded windowWidth that broke on desktop with native scroll scaling
-                        windowWidth: element.scrollWidth 
+                        scrollX: 0,
+                        // FIX: Hardlocking window width to exact element width stops the viewport from pushing the canvas right
+                        windowWidth: 794 
                     },
                     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
                     pagebreak:    { mode: ['css', 'legacy'] }
@@ -1029,6 +1033,9 @@
                     element.style.width = '';
                     element.style.maxWidth = '';
                     element.style.position = '';
+                    element.style.left = '';
+                    element.style.top = '';
+                    element.style.margin = '';
                     resolve(true);
                 }).catch(err => {
                     console.error("PDF Export Error:", err);
@@ -1038,6 +1045,9 @@
                     element.style.width = '';
                     element.style.maxWidth = '';
                     element.style.position = '';
+                    element.style.left = '';
+                    element.style.top = '';
+                    element.style.margin = '';
                     resolve(false);
                 });
             });
