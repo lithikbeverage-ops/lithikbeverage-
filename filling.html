@@ -923,6 +923,7 @@
             let validItems = true;
             let rejectMathError = false;
             let totalCost = 0;
+            let totalQty = 0;
 
             document.querySelectorAll('.item-row').forEach(row => {
                 const selectEl = row.querySelector('.f-product');
@@ -989,6 +990,7 @@
                             exactEmptyDeducted: exactEmptyDeducted
                         });
                         totalCost += cost;
+                        totalQty += exactFinishedAdded;
                     } else {
                         validItems = false;
                     }
@@ -1012,6 +1014,7 @@
                         dcNo,
                         items,
                         totalCost,
+                        qty: Math.round(totalQty * 10000) / 10000,
                         createdAt: serverTimestamp()
                     };
 
