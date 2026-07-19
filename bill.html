@@ -374,6 +374,7 @@
                             </div>
 
                             <input type="hidden" id="pInvId">
+                            <input type="hidden" id="pHsn" value="-">
                             <input type="hidden" id="pCurrentStock" value="0">
 
                             <div class="input-row">
@@ -524,7 +525,7 @@
                     <strong id="prProductCode">N/A</strong>
                 </div>
                 
-                <img id="prQrCode" src="" alt="Invoice QR" style="width: 95px; height: 95px; display: none; border: 2px solid #3b82f6; padding: 4px; background: white; border-radius: 8px; margin-top: 20px;" onerror="this.style.display='none'">
+                <img id="prQrCode" src="" alt="Invoice QR" style="width: 95px; height: 95px; display: none; border: 2px solid #3b82f6; padding: 4px; background: white; border-radius: 8px; margin-top: 20px;">
             </div>
         </div>
 
@@ -811,6 +812,7 @@
                         vibrateApp(10);
                         if(d.qty <= 0) { showToast("Item is out of stock!"); return; }
                         document.getElementById('pInvId').value = d.id;
+                        document.getElementById('pHsn').value = d.hsn || '-';
                         document.getElementById('pCurrentStock').value = d.qty || 0;
                         document.getElementById('pName').value = d.name;
                         document.getElementById('pPrice').value = d.price || '';
@@ -876,6 +878,7 @@
             const discount = parseFloat(document.getElementById('pDiscount').value) || 0; 
             const gstPercent = parseFloat(document.getElementById('pGst').value) || 0; 
             const invId = document.getElementById('pInvId').value;
+            const hsn = document.getElementById('pHsn').value || '-';
             const currentStock = parseInt(document.getElementById('pCurrentStock').value) || 0;
 
             if (!invId) { showToast("Select item from inventory search."); return; }
@@ -903,10 +906,11 @@
                 item.sgst = Number((item.gstAmount - item.cgst).toFixed(2));
                 item.finalTotal = newNet;
             } else {
-                cartItems.push({ invId, name, price, qty, discount, gstPercent, baseTotal: baseAmount, gstAmount: totalGstAmount, cgst: cgstAmount, sgst: sgstAmount, finalTotal: netAfterDiscount });
+                cartItems.push({ invId, hsn, name, price, qty, discount, gstPercent, baseTotal: baseAmount, gstAmount: totalGstAmount, cgst: cgstAmount, sgst: sgstAmount, finalTotal: netAfterDiscount });
             }
 
             document.getElementById('pInvId').value = '';
+            document.getElementById('pHsn').value = '-';
             document.getElementById('pName').value = '';
             document.getElementById('pPrice').value = '';
             document.getElementById('pQty').value = '1';
@@ -1074,11 +1078,11 @@
             const dateFormatted = `${dObj.getDate().toString().padStart(2, '0')}-${(dObj.getMonth()+1).toString().padStart(2, '0')}-${dObj.getFullYear()}`;
             document.getElementById('prDate').innerText = dateFormatted;
 
-            // Generate QR Code dynamically
+            // Generate QR Code dynamically using an adblock-friendly service
             const customerName = document.getElementById('cName').value || 'Cash Customer';
             const qrTextData = `LITHIK BEVERAGE\nInv No: ${invNo}\nDate: ${dateFormatted}\nBilled To: ${customerName}\nTotal Amount: Rs. ${billTotals.grand.toFixed(2)}`;
             const qrCodeImg = document.getElementById('prQrCode');
-            qrCodeImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrTextData)}`;
+            qrCodeImg.src = `https://quickchart.io/qr?text=${encodeURIComponent(qrTextData)}&size=150&margin=1`;
             qrCodeImg.style.display = 'block';
 
             const tbody = document.getElementById('prTableBody');
@@ -1123,7 +1127,7 @@
                     <tr style="height: 25mm; max-height: 25mm;">
                         <td>${num}.</td>
                         <td>${desc}</td>
-                        <td class="text-center">-</td>
+                        <td class="text-center">${item.hsn || '-'}</td>
                         <td class="text-center">${item.qty.toString().padStart(2, '0')}</td>
                         <td class="text-right">₹${item.price.toFixed(2)}</td>
                         <td class="text-right" style="font-weight:900; color:#0f172a;">₹${item.finalTotal.toFixed(2)}</td>
